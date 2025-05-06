@@ -22,7 +22,7 @@ CONFIG_SCHEMA = (
         }
     )
     .extend(ble_client.BLE_CLIENT_SCHEMA)
-    .extend(cv.polling_component_schema("10s"))
+    .extend(cv.polling_component_schema("20s"))
 )
 
 

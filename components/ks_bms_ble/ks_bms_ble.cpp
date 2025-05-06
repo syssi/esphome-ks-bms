@@ -17,10 +17,24 @@ static const uint8_t KS_PKT_START = 0x7B;
 static const uint8_t KS_PKT_END = 0x7D;
 
 static const uint8_t KS_FRAME_TYPE_STATUS = 0x01;
+static const uint8_t KS_FRAME_TYPE_CELL_VOLTAGES = 0x02;
+static const uint8_t KS_FRAME_TYPE_TEMPERATURES = 0x03;
+static const uint8_t KS_FRAME_TYPE_HISTORY = 0x08;
+static const uint8_t KS_FRAME_TYPE_MANUFACTURING_DATE = 0x09;
+static const uint8_t KS_FRAME_TYPE_MODEL_NAME = 0x0A;
+static const uint8_t KS_FRAME_TYPE_SERIAL_NUMBER = 0x0B;
+static const uint8_t KS_FRAME_TYPE_MODEL_TYPE = 0x0C;
+static const uint8_t KS_FRAME_TYPE_STATUS_BITMASK = 0x64;
+static const uint8_t KS_FRAME_TYPE_SOFTWARE_VERSION = 0xF3;
+static const uint8_t KS_FRAME_TYPE_HARDWARE_VERSION = 0xF4;
+static const uint8_t KS_FRAME_TYPE_BOOTLOADER_VERSION = 0xF5;
 
-static const uint8_t KS_COMMAND_QUEUE_SIZE = 1;
+static const uint8_t KS_COMMAND_QUEUE_SIZE = 12;
 static const uint8_t KS_COMMAND_QUEUE[KS_COMMAND_QUEUE_SIZE] = {
-    KS_FRAME_TYPE_STATUS,
+    KS_FRAME_TYPE_STATUS,           KS_FRAME_TYPE_CELL_VOLTAGES,      KS_FRAME_TYPE_TEMPERATURES,
+    KS_FRAME_TYPE_HISTORY,          KS_FRAME_TYPE_MANUFACTURING_DATE, KS_FRAME_TYPE_SOFTWARE_VERSION,
+    KS_FRAME_TYPE_HARDWARE_VERSION, KS_FRAME_TYPE_BOOTLOADER_VERSION, KS_FRAME_TYPE_MODEL_NAME,
+    KS_FRAME_TYPE_SERIAL_NUMBER,    KS_FRAME_TYPE_MODEL_TYPE,         KS_FRAME_TYPE_STATUS_BITMASK,
 };
 
 void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if,
