@@ -11,11 +11,9 @@ static const uint16_t KS_BMS_SERVICE_UUID = 0xFF00;
 static const uint16_t KS_BMS_NOTIFY_CHARACTERISTIC_UUID = 0xFF01;
 static const uint16_t KS_BMS_CONTROL_CHARACTERISTIC_UUID = 0xFF02;
 
-static const uint16_t MAX_RESPONSE_SIZE = 20;
+static const uint16_t MAX_RESPONSE_SIZE = 40;
 
 static const uint8_t KS_PKT_START = 0x7B;
-static const uint8_t KS_FUNCTION_REQUEST = 0x04;
-static const uint8_t KS_FUNCTION_RESPONSE = 0x14;
 static const uint8_t KS_PKT_END = 0x7D;
 
 static const uint8_t KS_FRAME_TYPE_STATUS = 0x01;
@@ -23,86 +21,6 @@ static const uint8_t KS_FRAME_TYPE_STATUS = 0x01;
 static const uint8_t KS_COMMAND_QUEUE_SIZE = 1;
 static const uint8_t KS_COMMAND_QUEUE[KS_COMMAND_QUEUE_SIZE] = {
     KS_FRAME_TYPE_STATUS,
-};
-
-static const uint8_t VOLTAGE_PROTECTION_ERRORS_SIZE = 16;
-static const char *const VOLTAGE_PROTECTION_ERRORS[VOLTAGE_PROTECTION_ERRORS_SIZE] = {
-    "Cell overvoltage protection",         // 0000 0000 0000 0001
-    "Cell undervoltage protection",        // 0000 0000 0000 0010
-    "Pack overvoltage protection",         // 0000 0000 0000 0100
-    "Pack undervoltage protection",        // 0000 0000 0000 1000
-    "Cell overvoltage alarm",              // 0000 0000 0001 0000
-    "Cell undervoltage alarm",             // 0000 0000 0010 0000
-    "Pack overvoltage alarm",              // 0000 0000 0100 0000
-    "Pack undervoltage alarm",             // 0000 0000 1000 0000
-    "Cell voltage difference alarm",       // 0000 0001 0000 0000
-    "Reserved",                            // 0000 0010 0000 0000
-    "Reserved",                            // 0000 0100 0000 0000
-    "Reserved",                            // 0000 1000 0000 0000
-    "Reserved",                            // 0001 0000 0000 0000
-    "Reserved",                            // 0010 0000 0000 0000
-    "The system is going to sleep state",  // 0100 0000 0000 0000
-    "Reserved",                            // 1000 0000 0000 0000
-};
-
-static const uint8_t TEMPERATURE_PROTECTION_ERRORS_SIZE = 16;
-static const char *const TEMPERATURE_PROTECTION_ERRORS[TEMPERATURE_PROTECTION_ERRORS_SIZE] = {
-    "Charge over temperature protection",      // 0000 0000 0000 0001
-    "Charge under temperature protection",     // 0000 0000 0000 0010
-    "Discharge over temperature protection",   // 0000 0000 0000 0100
-    "Discharge under temperature protection",  // 0000 0000 0000 1000
-    "Ambient over temperature protection",     // 0000 0000 0001 0000
-    "Ambient under temperature protection",    // 0000 0000 0010 0000
-    "MOS over temperature protection",         // 0000 0000 0100 0000
-    "MOS under temperature protection",        // 0000 0000 1000 0000
-    "Charge over temperature alarm",           // 0000 0001 0000 0000
-    "Charge under temperature alarm",          // 0000 0010 0000 0000
-    "Discharge over temperature alarm",        // 0000 0100 0000 0000
-    "Discharge under temperature alarm",       // 0000 1000 0000 0000
-    "Ambient over temperature alarm",          // 0001 0000 0000 0000
-    "Ambient under temperature alarm",         // 0010 0000 0000 0000
-    "MOS over temperature alarm",              // 0100 0000 0000 0000
-    "MOS under temperature alarm",             // 1000 0000 0000 0000
-};
-
-static const uint8_t CURRENT_PROTECTION_ERRORS_SIZE = 16;
-static const char *const CURRENT_PROTECTION_ERRORS[CURRENT_PROTECTION_ERRORS_SIZE] = {
-    "Charge overcurrent protection",       // 0000 0000 0000 0001
-    "Short circuit protection",            // 0000 0000 0000 0010
-    "Discharge overcurrent 1 protection",  // 0000 0000 0000 0100
-    "Discharge overcurrent 2 protection",  // 0000 0000 0000 1000
-    "Charge overcurrent alarm",            // 0000 0000 0001 0000
-    "Discharge overcurrent alarm",         // 0000 0000 0010 0000
-    "Gyro lock alarm",                     // 0000 0000 0100 0000
-    "Reserved",                            // 0000 0000 1000 0000
-    "Reserved",                            // 0000 0001 0000 0000
-    "Reserved",                            // 0000 0010 0000 0000
-    "Reserved",                            // 0000 0100 0000 0000
-    "Reserved",                            // 0000 1000 0000 0000
-    "Reserved",                            // 0001 0000 0000 0000
-    "Reserved",                            // 0010 0000 0000 0000
-    "Reserved",                            // 0100 0000 0000 0000
-    "Reserved",                            // 1000 0000 0000 0000
-};
-
-static const uint8_t ERRORS_SIZE = 16;
-static const char *const ERRORS[ERRORS_SIZE] = {
-    "Cell voltage differential alarm",  // 0000 0000 0000 0001
-    "Charge MOS damage alarm",          // 0000 0000 0000 0010
-    "External SD card failure alarm",   // 0000 0000 0000 0100
-    "SPI communication failure alarm",  // 0000 0000 0000 1000
-    "EEPROM failure alarm",             // 0000 0000 0001 0000
-    "LED alarm enable",                 // 0000 0000 0010 0000
-    "Buzzer alarm enable",              // 0000 0000 0100 0000
-    "Low battery alarm",                // 0000 0000 1000 0000
-    "MOS over temperature protection",  // 0000 0001 0000 0000
-    "MOS over temperature alarm",       // 0000 0010 0000 0000
-    "Current limiting board failure",   // 0000 0100 0000 0000
-    "Sampling failure",                 // 0000 1000 0000 0000
-    "Battery failure",                  // 0001 0000 0000 0000
-    "NTC failure",                      // 0010 0000 0000 0000
-    "Charge MOS failure",               // 0100 0000 0000 0000
-    "Discharge MOS failure",            // 1000 0000 0000 0000
 };
 
 void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if,
@@ -129,13 +47,6 @@ void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gat
       break;
     }
     case ESP_GATTC_SEARCH_CMPL_EVT: {
-      // [V][esp32_ble_client:192]: [0] [90:A6:BF:93:A0:69] Service UUID: 0x1800
-      // [V][esp32_ble_client:194]: [0] [90:A6:BF:93:A0:69]  start_handle: 0x1  end_handle: 0x7
-      // [V][esp32_ble_client:192]: [0] [90:A6:BF:93:A0:69] Service UUID: 0x1801
-      // [V][esp32_ble_client:194]: [0] [90:A6:BF:93:A0:69]  start_handle: 0x8  end_handle: 0xf
-      // [V][esp32_ble_client:192]: [0] [90:A6:BF:93:A0:69] Service UUID: 0xFF00
-      // [V][esp32_ble_client:194]: [0] [90:A6:BF:93:A0:69]  start_handle: 0x10  end_handle: 0x18
-
       auto *char_notify = this->parent_->get_characteristic(KS_BMS_SERVICE_UUID, KS_BMS_NOTIFY_CHARACTERISTIC_UUID);
       if (char_notify == nullptr) {
         ESP_LOGE(TAG, "[%s] No notify service found at device, not an Ks BMS..?", this->parent_->address_str().c_str());
@@ -190,12 +101,12 @@ void KsBmsBle::update() {
 }
 
 void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8_t> &data) {
-  if (data[0] != KS_PKT_START || data.back() != KS_PKT_END || data.size() != MAX_RESPONSE_SIZE) {
+  if (data[0] != KS_PKT_START || data.back() != KS_PKT_END || data.size() > MAX_RESPONSE_SIZE) {
     ESP_LOGW(TAG, "Invalid response received: %s", format_hex_pretty(&data.front(), data.size()).c_str());
     return;
   }
 
-  uint8_t frame_type = data[2];
+  uint8_t frame_type = data[1];
 
   switch (frame_type) {
     default:
