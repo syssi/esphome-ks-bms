@@ -120,7 +120,7 @@ static const char *const ERRORS[ERRORS_SIZE] = {
 };
 
 void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if,
-                                          esp_ble_gattc_cb_param_t *param) {
+                                   esp_ble_gattc_cb_param_t *param) {
   switch (event) {
     case ESP_GATTC_OPEN_EVT: {
       break;
@@ -150,11 +150,9 @@ void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gat
       // [V][esp32_ble_client:192]: [0] [90:A6:BF:93:A0:69] Service UUID: 0xFF00
       // [V][esp32_ble_client:194]: [0] [90:A6:BF:93:A0:69]  start_handle: 0x10  end_handle: 0x18
 
-      auto *char_notify =
-          this->parent_->get_characteristic(KS_BMS_SERVICE_UUID, KS_BMS_NOTIFY_CHARACTERISTIC_UUID);
+      auto *char_notify = this->parent_->get_characteristic(KS_BMS_SERVICE_UUID, KS_BMS_NOTIFY_CHARACTERISTIC_UUID);
       if (char_notify == nullptr) {
-        ESP_LOGE(TAG, "[%s] No notify service found at device, not an Ks BMS..?",
-                 this->parent_->address_str().c_str());
+        ESP_LOGE(TAG, "[%s] No notify service found at device, not an Ks BMS..?", this->parent_->address_str().c_str());
         break;
       }
       this->char_notify_handle_ = char_notify->handle;
@@ -181,8 +179,7 @@ void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gat
       //        ESP_LOGW(TAG, "esp_ble_gattc_register_for_notify failed, status=%d", status2);
       //      }
 
-      auto *char_command =
-          this->parent_->get_characteristic(KS_BMS_SERVICE_UUID, KS_BMS_CONTROL_CHARACTERISTIC_UUID);
+      auto *char_command = this->parent_->get_characteristic(KS_BMS_SERVICE_UUID, KS_BMS_CONTROL_CHARACTERISTIC_UUID);
       if (char_command == nullptr) {
         ESP_LOGE(TAG, "[%s] No control service found at device, not an BASEN BMS..?",
                  this->parent_->address_str().c_str());
@@ -300,9 +297,7 @@ void KsBmsBle::decode_hardware_version_data_(const std::vector<uint8_t> &data) {
 }
 
 void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
-  auto ks_get_16bit = [&](size_t i) -> uint16_t {
-    return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0);
-  };
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
 
   ESP_LOGI(TAG, "Status frame received");
   ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
@@ -344,9 +339,7 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
 }
 
 void KsBmsBle::decode_general_info_data_(const std::vector<uint8_t> &data) {
-  auto ks_get_16bit = [&](size_t i) -> uint16_t {
-    return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0);
-  };
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
 
   ESP_LOGI(TAG, "General info frame received");
   ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
@@ -369,15 +362,13 @@ void KsBmsBle::decode_general_info_data_(const std::vector<uint8_t> &data) {
 
   //  11   2  0x00 0x00    Voltage protection bitmask
   this->publish_state_(this->voltage_protection_bitmask_sensor_, ks_get_16bit(11) * 1.0f);
-  this->publish_state_(
-      this->voltage_protection_text_sensor_,
-      bitmask_to_string_(VOLTAGE_PROTECTION_ERRORS, VOLTAGE_PROTECTION_ERRORS_SIZE, ks_get_16bit(11)));
+  this->publish_state_(this->voltage_protection_text_sensor_,
+                       bitmask_to_string_(VOLTAGE_PROTECTION_ERRORS, VOLTAGE_PROTECTION_ERRORS_SIZE, ks_get_16bit(11)));
 
   //  13   2  0x00 0x00    Current protection bitmask
   this->publish_state_(this->current_protection_bitmask_sensor_, ks_get_16bit(13) * 1.0f);
-  this->publish_state_(
-      this->current_protection_text_sensor_,
-      bitmask_to_string_(CURRENT_PROTECTION_ERRORS, CURRENT_PROTECTION_ERRORS_SIZE, ks_get_16bit(13)));
+  this->publish_state_(this->current_protection_text_sensor_,
+                       bitmask_to_string_(CURRENT_PROTECTION_ERRORS, CURRENT_PROTECTION_ERRORS_SIZE, ks_get_16bit(13)));
 
   //  15   2  0x00 0x00    Temperature protection bitmask
   this->publish_state_(this->temperature_protection_bitmask_sensor_, ks_get_16bit(15) * 1.0f);
@@ -393,9 +384,7 @@ void KsBmsBle::decode_general_info_data_(const std::vector<uint8_t> &data) {
 }
 
 void KsBmsBle::decode_mosfet_status_data_(const std::vector<uint8_t> &data) {
-  auto ks_get_16bit = [&](size_t i) -> uint16_t {
-    return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0);
-  };
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
 
   ESP_LOGI(TAG, "Mosfet status frame received");
   ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
@@ -421,9 +410,7 @@ void KsBmsBle::decode_mosfet_status_data_(const std::vector<uint8_t> &data) {
 }
 
 void KsBmsBle::decode_temperature_data_(const std::vector<uint8_t> &data) {
-  auto ks_get_16bit = [&](size_t i) -> uint16_t {
-    return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0);
-  };
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
 
   ESP_LOGI(TAG, "Temperature frame received");
   ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
@@ -441,17 +428,14 @@ void KsBmsBle::decode_temperature_data_(const std::vector<uint8_t> &data) {
   //  15   2  0x00 0x00    Temperature 7
   //  17   2  0x00 0x00    Temperature 8
   for (uint8_t i = 0; i < 8; i++) {
-    this->publish_state_(this->temperatures_[i].temperature_sensor_,
-                         ((int16_t) ks_get_16bit((i * 2) + 3)) * 0.1f);
+    this->publish_state_(this->temperatures_[i].temperature_sensor_, ((int16_t) ks_get_16bit((i * 2) + 3)) * 0.1f);
   }
 
   //  19   1  0xaa         End of frame
 }
 
 void KsBmsBle::decode_cell_voltages_data_(const uint8_t &chunk, const std::vector<uint8_t> &data) {
-  auto ks_get_16bit = [&](size_t i) -> uint16_t {
-    return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0);
-  };
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
 
   uint8_t offset = 8 * chunk;
 
@@ -614,7 +598,7 @@ bool KsBmsBle::send_command_(uint8_t function) {
 }
 
 std::string KsBmsBle::bitmask_to_string_(const char *const messages[], const uint8_t &messages_size,
-                                                const uint16_t &mask) {
+                                         const uint16_t &mask) {
   std::string values = "";
   if (mask) {
     for (int i = 0; i < messages_size; i++) {
