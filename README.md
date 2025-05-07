@@ -10,7 +10,13 @@ ESPHome component to monitor a KS48100 Battery Management System via BLE
 
 ## Supported devices
 
-* TBD.
+* KS48100 used in PAPool/Aliexpress 48V 280Ah battery pack ([#1](https://github.com/syssi/esphome-ks-bms/issues/1))<br>
+  Probably advertised via BLE as `CER2410-018-030-023` or `TZ-H002-02408-0103`
+
+* KS48100 used in VoltPolska 12.8V 100Ah battery pack ([ref](https://dou.ua/forums/topic/42715/))<br>
+  Probably advertised via BLE as `12V100A00460`
+
+* KS48100 used in BEMORY LFP48100PB battery bank
 
 ## Requirements
 
