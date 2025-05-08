@@ -140,6 +140,13 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
 
 void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+  auto ks_get_balancer_status = [&](size_t i) -> uint32_t {
+    return (data[i + 0] << 24) | (data[i + 1] << 16) | (data[i + 2] << 8) | data[i + 3];
+  };
+
+  auto ks_get_32bit = [&](size_t i) -> uint32_t {
+    return (uint32_t(ks_get_16bit(i + 0)) << 16) | (uint32_t(ks_get_16bit(i + 2)) << 0);
+  };
 
   ESP_LOGI(TAG, "Status frame received");
   ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
@@ -181,21 +188,38 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   // 19    2  0x75 0x30    Nominal capacity
   this->publish_state_(this->nominal_capacity_sensor_, ks_get_16bit(19) * 0.01f);
 
-  // 21    2  0x00 0x00    XHRL?
+  // 21    2  0x00 0x00    Unknown
 
   // 23    2  0x00 0x01    Number of cycles
   this->publish_state_(this->charging_cycles_sensor_, ks_get_16bit(23) * 1.0f);
 
-  // 25    2  0x00 0x00    Equilibrium state
-  ESP_LOGI(TAG, "Equilibrium state: %d", ks_get_16bit(25));
-
-  // 27    2  0x00 0x00    Upper equilibrium state
-  ESP_LOGI(TAG, "Upper equilibrium state: %d", ks_get_16bit(27));
+  // 25    4  0x00 0x00 0x00 0x00    Balancer status (balanced cell)
+  ESP_LOGI(TAG, "Equilibrium state: %d", ks_get_balancer_status(25));
 
   // 29    2  0x00 0x0C    FET control status
+  //                         Bit 0: Charging
+  //                         Bit 1: Discharging
+  //                         Bit 2: Charging error
+  //                         Bit 3: Discharging error
   ESP_LOGI(TAG, "FET control status: %d", ks_get_16bit(29));
 
   // 31    2  0x00 0x00    Protection status
+  //                         Bit 0: Over Current Protection
+  //                         Bit 1: Under Current Protection
+  //                         Bit 2: Over Voltage Protection
+  //                         Bit 3: Under Voltage Protection
+  //                         Bit 4: Over Temperature Charge Protection
+  //                         Bit 5: Under Temperature Charge Protection
+  //                         Bit 6: Over Temperature Discharge Protection
+  //                         Bit 7: Under Temperature Discharge Protection
+  //                         Bit 8: Over Current Charge Protection
+  //                         Bit 9: Over Current Discharge Protection
+  //                         Bit 10: Short Circuit Protection
+  //                         Bit 11: Analog Front-End Error
+  //                         Bit 12: Soft Lock MOS
+  //                         Bit 13: Charge MOSFET Error
+  //                         Bit 14: Discharge MOSFET Error
+  //                         Bit 15:Reserved
   ESP_LOGI(TAG, "Protection status: %d", ks_get_16bit(31));
 
   // 33    2  0x00 0x64    State of Health (if available)
