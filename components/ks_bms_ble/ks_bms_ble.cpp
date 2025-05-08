@@ -129,10 +129,73 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
   uint8_t frame_type = data[1];
 
   switch (frame_type) {
+    case KS_FRAME_TYPE_STATUS:
+      this->decode_status_data_(data);
+      break;
     default:
       ESP_LOGW(TAG, "Unhandled response received (frame_type 0x%02X): %s", frame_type,
                format_hex_pretty(&data.front(), data.size()).c_str());
   }
+}
+
+void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Status frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0x01         Frame type
+  //  2    1  0x20         Data length
+  //  3    2  0x00 0x45    State of charge (69%)              %   1.0    69%
+  ESP_LOGI(TAG, "State of charge: %d%%", ks_get_16bit(3));
+
+  //  5    2  0x14 0x8D    Total voltage
+  ESP_LOGI(TAG, "Total voltage: %.2f V", ks_get_16bit(5) * 0.01f);
+
+  //  7    2  0x00 0xDC
+
+  //  9    2  0x00 0xB4
+
+  // 11    2  0x00 0xB4    Mosfet temperature
+  ESP_LOGI(TAG, "Mosfet temperature: %.1f °C", ks_get_16bit(11) * 0.1f);
+
+  // 13    2  0x00 0x00    Current @FIXME
+  ESP_LOGI(TAG, "Current: %f A", ks_get_16bit(13) * 1.0f);
+
+  // 15    2  0x52 0x05    Remaining capacity
+  ESP_LOGI(TAG, "Remaining capacity: %.2f Ah", ks_get_16bit(15) * 0.01f);
+
+  // 17    2  0x75 0x30    Full capacity
+  ESP_LOGI(TAG, "Full capacity: %.2f Ah", ks_get_16bit(17) * 0.01f);
+
+  // 19    2  0x75 0x30    Nominal capacity
+  ESP_LOGI(TAG, "Nominal capacity: %.2f Ah", ks_get_16bit(19) * 0.01f);
+
+  // 21    2  0x00 0x00    XHRL?
+
+  // 23    2  0x00 0x01    Number of cycles
+  ESP_LOGI(TAG, "Number of cycles: %d", ks_get_16bit(23));
+
+  // 25    2  0x00 0x00    Equilibrium state
+  ESP_LOGI(TAG, "Equilibrium state: %d", ks_get_16bit(25));
+
+  // 27    2  0x00 0x00    Upper equilibrium state
+  ESP_LOGI(TAG, "Upper equilibrium state: %d", ks_get_16bit(27));
+
+  // 29    2  0x00 0x0C    FET control status
+  ESP_LOGI(TAG, "FET control status: %d", ks_get_16bit(29));
+
+  // 31    2  0x00 0x00    Protection status
+  ESP_LOGI(TAG, "Protection status: %d", ks_get_16bit(31));
+
+  // 33    2  0x00 0x64    State of Health (if available)
+  if (data[2] > 19) {
+    ESP_LOGI(TAG, "State of health: %d%%", ks_get_16bit(33));
+  }
+
+  // 34    1  0x7D         End of frame
 }
 
 void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,readability-function-size)
