@@ -149,29 +149,23 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   //  1    1  0x01         Frame type
   //  2    1  0x20         Data length
   //  3    2  0x00 0x45    State of charge (69%)              %   1.0    69%
-  ESP_LOGI(TAG, "State of charge: %d%%", ks_get_16bit(3));
   this->publish_state_(this->state_of_charge_sensor_, ks_get_16bit(3) * 1.0f);
 
   //  5    2  0x14 0x8D    Total voltage
-  ESP_LOGI(TAG, "Total voltage: %.2f V", ks_get_16bit(5) * 0.01f);
   float total_voltage = ks_get_16bit(5) * 0.01f;
   this->publish_state_(this->total_voltage_sensor_, total_voltage);
 
   //  7    2  0x00 0xDC    Average temperature?
-  ESP_LOGI(TAG, "Average temperature: %.1f °C", ((int16_t) ks_get_16bit(7)) * 0.1f);
   this->publish_state_(this->average_temperature_sensor_, ((int16_t) ks_get_16bit(7)) * 0.1f);
 
   //  9    2  0x00 0xB4    Ambient temperature?
-  ESP_LOGI(TAG, "Ambient temperature: %.1f °C", ((int16_t) ks_get_16bit(9)) * 0.1f);
   this->publish_state_(this->ambient_temperature_sensor_, ((int16_t) ks_get_16bit(9)) * 0.1f);
 
   // 11    2  0x00 0xB4    Mosfet temperature
-  ESP_LOGI(TAG, "Mosfet temperature: %.1f °C", ((int16_t) ks_get_16bit(11)) * 0.1f);
   this->publish_state_(this->mosfet_temperature_sensor_, ((int16_t) ks_get_16bit(11)) * 0.1f);
 
   // 13    2  0x00 0x00    Current
   float current = ((int16_t) ks_get_16bit(13)) * 0.01f;
-  ESP_LOGI(TAG, "Current: %f A", current);
   this->publish_state_(this->current_sensor_, current);
   float power = total_voltage * current;
   this->publish_state_(this->power_sensor_, power);
@@ -179,20 +173,17 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   this->publish_state_(this->discharging_power_sensor_, std::abs(std::min(0.0f, power)));  // -500W vs 0W -> 500W
 
   // 15    2  0x52 0x05    Remaining capacity
-  ESP_LOGI(TAG, "Remaining capacity: %.2f Ah", ks_get_16bit(15) * 0.01f);
   this->publish_state_(this->capacity_remaining_sensor_, ks_get_16bit(15) * 0.01f);
 
   // 17    2  0x75 0x30    Full capacity
   ESP_LOGI(TAG, "Full capacity: %.2f Ah", ks_get_16bit(17) * 0.01f);
 
   // 19    2  0x75 0x30    Nominal capacity
-  ESP_LOGI(TAG, "Nominal capacity: %.2f Ah", ks_get_16bit(19) * 0.01f);
   this->publish_state_(this->nominal_capacity_sensor_, ks_get_16bit(19) * 0.01f);
 
   // 21    2  0x00 0x00    XHRL?
 
   // 23    2  0x00 0x01    Number of cycles
-  ESP_LOGI(TAG, "Number of cycles: %d", ks_get_16bit(23));
   this->publish_state_(this->charging_cycles_sensor_, ks_get_16bit(23) * 1.0f);
 
   // 25    2  0x00 0x00    Equilibrium state
@@ -222,28 +213,31 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_BINARY_SENSOR("", "Discharging", this->discharging_binary_sensor_);
   LOG_BINARY_SENSOR("", "Limiting current", this->limiting_current_binary_sensor_);
 
+  LOG_SENSOR("", "State of charge", this->state_of_charge_sensor_);
   LOG_SENSOR("", "Total voltage", this->total_voltage_sensor_);
+  LOG_SENSOR("", "Average temperature", this->average_temperature_sensor_);
+  LOG_SENSOR("", "Ambient temperature", this->ambient_temperature_sensor_);
+  LOG_SENSOR("", "Mosfet temperature", this->mosfet_temperature_sensor_);
   LOG_SENSOR("", "Current", this->current_sensor_);
   LOG_SENSOR("", "Power", this->power_sensor_);
   LOG_SENSOR("", "Charging power", this->charging_power_sensor_);
   LOG_SENSOR("", "Discharging power", this->discharging_power_sensor_);
   LOG_SENSOR("", "Capacity remaining", this->capacity_remaining_sensor_);
+
+  LOG_SENSOR("", "Nominal capacity", this->nominal_capacity_sensor_);
+  LOG_SENSOR("", "Charging cycles", this->charging_cycles_sensor_);
+
+  LOG_SENSOR("", "State of health", this->state_of_charge_sensor_);
+
   LOG_SENSOR("", "Voltage protection bitmask", this->voltage_protection_bitmask_sensor_);
   LOG_SENSOR("", "Current protection bitmask", this->current_protection_bitmask_sensor_);
   LOG_SENSOR("", "Temperature protection bitmask", this->temperature_protection_bitmask_sensor_);
   LOG_SENSOR("", "Error bitmask", this->error_bitmask_sensor_);
-  LOG_SENSOR("", "State of charge", this->state_of_charge_sensor_);
-  LOG_SENSOR("", "Nominal capacity", this->nominal_capacity_sensor_);
-  LOG_SENSOR("", "Charging cycles", this->charging_cycles_sensor_);
   LOG_SENSOR("", "Min cell voltage", this->min_cell_voltage_sensor_);
   LOG_SENSOR("", "Max cell voltage", this->max_cell_voltage_sensor_);
   LOG_SENSOR("", "Min voltage cell", this->min_voltage_cell_sensor_);
   LOG_SENSOR("", "Max voltage cell", this->max_voltage_cell_sensor_);
   LOG_SENSOR("", "Delta cell voltage", this->delta_cell_voltage_sensor_);
-  LOG_SENSOR("", "Average temperature", this->average_temperature_sensor_);
-  LOG_SENSOR("", "Ambient temperature", this->ambient_temperature_sensor_);
-  LOG_SENSOR("", "Mosfet temperature", this->mosfet_temperature_sensor_);
-  LOG_SENSOR("", "State of health", this->state_of_charge_sensor_);
   LOG_SENSOR("", "Temperature 1", this->temperatures_[0].temperature_sensor_);
   LOG_SENSOR("", "Temperature 2", this->temperatures_[1].temperature_sensor_);
   LOG_SENSOR("", "Temperature 3", this->temperatures_[2].temperature_sensor_);
