@@ -189,6 +189,7 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   this->publish_state_(this->nominal_capacity_sensor_, ks_get_16bit(19) * 0.01f);
 
   // 21    2  0x00 0x00    Unknown
+  ESP_LOGD(TAG, "Unknown21: %d (0x%02X 0x%02X)", ks_get_16bit(21), data[21], data[22]);
 
   // 23    2  0x00 0x01    Number of cycles
   this->publish_state_(this->charging_cycles_sensor_, ks_get_16bit(23) * 1.0f);
