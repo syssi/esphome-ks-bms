@@ -194,7 +194,7 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   this->publish_state_(this->charging_cycles_sensor_, ks_get_16bit(23) * 1.0f);
 
   // 25    4  0x00 0x00 0x00 0x00    Balancer status (balanced cell)
-  ESP_LOGI(TAG, "Balancer status: %d", ks_get_balancer_status(25));
+  ESP_LOGI(TAG, "Balancer status: %lu", (unsigned long) ks_get_balancer_status(25));
 
   // 29    2  0x00 0x0C    FET control status
   //                         Bit 0: Charging
