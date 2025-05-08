@@ -157,17 +157,21 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   float total_voltage = ks_get_16bit(5) * 0.01f;
   this->publish_state_(this->total_voltage_sensor_, total_voltage);
 
-  //  7    2  0x00 0xDC
-
-  //  9    2  0x00 0xB4
+  //  7    2  0x00 0xDC    Average temperature?
+  ESP_LOGI(TAG, "Average temperature: %.1f °C", ((int16_t) ks_get_16bit(7)) * 0.1f);
+  this->publish_state_(this->average_temperature_sensor_, ((int16_t) ks_get_16bit(7)) * 0.1f);
+    
+  //  9    2  0x00 0xB4    Ambient temperature?
+  ESP_LOGI(TAG, "Ambient temperature: %.1f °C", ((int16_t) ks_get_16bit(9)) * 0.1f);
+  this->publish_state_(this->ambient_temperature_sensor_, ((int16_t) ks_get_16bit(9)) * 0.1f);
 
   // 11    2  0x00 0xB4    Mosfet temperature
-  ESP_LOGI(TAG, "Mosfet temperature: %.1f °C", ks_get_16bit(11) * 0.1f);
+  ESP_LOGI(TAG, "Mosfet temperature: %.1f °C", ((int16_t) ks_get_16bit(11)) * 0.1f);
   this->publish_state_(this->mosfet_temperature_sensor_, ((int16_t) ks_get_16bit(11)) * 0.1f);
 
-  // 13    2  0x00 0x00    Current @FIXME
-  ESP_LOGI(TAG, "Current: %f A", ks_get_16bit(13) * 1.0f);
+  // 13    2  0x00 0x00    Current
   float current = ((int16_t) ks_get_16bit(13)) * 0.01f;
+  ESP_LOGI(TAG, "Current: %f A", current);
   this->publish_state_(this->current_sensor_, current);
   float power = total_voltage * current;
   this->publish_state_(this->power_sensor_, power);
