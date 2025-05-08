@@ -160,7 +160,7 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   //  7    2  0x00 0xDC    Average temperature?
   ESP_LOGI(TAG, "Average temperature: %.1f °C", ((int16_t) ks_get_16bit(7)) * 0.1f);
   this->publish_state_(this->average_temperature_sensor_, ((int16_t) ks_get_16bit(7)) * 0.1f);
-    
+
   //  9    2  0x00 0xB4    Ambient temperature?
   ESP_LOGI(TAG, "Ambient temperature: %.1f °C", ((int16_t) ks_get_16bit(9)) * 0.1f);
   this->publish_state_(this->ambient_temperature_sensor_, ((int16_t) ks_get_16bit(9)) * 0.1f);
