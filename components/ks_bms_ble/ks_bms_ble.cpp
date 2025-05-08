@@ -150,36 +150,50 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   //  2    1  0x20         Data length
   //  3    2  0x00 0x45    State of charge (69%)              %   1.0    69%
   ESP_LOGI(TAG, "State of charge: %d%%", ks_get_16bit(3));
+  this->publish_state_(this->state_of_charge_sensor_, ks_get_16bit(3) * 1.0f);
 
   //  5    2  0x14 0x8D    Total voltage
   ESP_LOGI(TAG, "Total voltage: %.2f V", ks_get_16bit(5) * 0.01f);
+  float total_voltage = ks_get_16bit(5) * 0.01f;
+  this->publish_state_(this->total_voltage_sensor_, total_voltage);
 
   //  7    2  0x00 0xDC    Average temperature?
   ESP_LOGI(TAG, "Average temperature: %.1f °C", ((int16_t) ks_get_16bit(7)) * 0.1f);
+  this->publish_state_(this->average_temperature_sensor_, ((int16_t) ks_get_16bit(7)) * 0.1f);
 
   //  9    2  0x00 0xB4    Ambient temperature?
   ESP_LOGI(TAG, "Ambient temperature: %.1f °C", ((int16_t) ks_get_16bit(9)) * 0.1f);
+  this->publish_state_(this->ambient_temperature_sensor_, ((int16_t) ks_get_16bit(9)) * 0.1f);
 
   // 11    2  0x00 0xB4    Mosfet temperature
   ESP_LOGI(TAG, "Mosfet temperature: %.1f °C", ((int16_t) ks_get_16bit(11)) * 0.1f);
+  this->publish_state_(this->mosfet_temperature_sensor_, ((int16_t) ks_get_16bit(11)) * 0.1f);
 
   // 13    2  0x00 0x00    Current
   float current = ((int16_t) ks_get_16bit(13)) * 0.01f;
   ESP_LOGI(TAG, "Current: %f A", current);
+  this->publish_state_(this->current_sensor_, current);
+  float power = total_voltage * current;
+  this->publish_state_(this->power_sensor_, power);
+  this->publish_state_(this->charging_power_sensor_, std::max(0.0f, power));               // 500W vs 0W -> 500W
+  this->publish_state_(this->discharging_power_sensor_, std::abs(std::min(0.0f, power)));  // -500W vs 0W -> 500W
 
   // 15    2  0x52 0x05    Remaining capacity
   ESP_LOGI(TAG, "Remaining capacity: %.2f Ah", ks_get_16bit(15) * 0.01f);
+  this->publish_state_(this->capacity_remaining_sensor_, ks_get_16bit(15) * 0.01f);
 
   // 17    2  0x75 0x30    Full capacity
   ESP_LOGI(TAG, "Full capacity: %.2f Ah", ks_get_16bit(17) * 0.01f);
 
   // 19    2  0x75 0x30    Nominal capacity
   ESP_LOGI(TAG, "Nominal capacity: %.2f Ah", ks_get_16bit(19) * 0.01f);
+  this->publish_state_(this->nominal_capacity_sensor_, ks_get_16bit(19) * 0.01f);
 
   // 21    2  0x00 0x00    XHRL?
 
   // 23    2  0x00 0x01    Number of cycles
   ESP_LOGI(TAG, "Number of cycles: %d", ks_get_16bit(23));
+  this->publish_state_(this->charging_cycles_sensor_, ks_get_16bit(23) * 1.0f);
 
   // 25    2  0x00 0x00    Equilibrium state
   ESP_LOGI(TAG, "Equilibrium state: %d", ks_get_16bit(25));
