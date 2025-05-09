@@ -170,15 +170,10 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
 
   std::vector<uint8_t> frame_buffer_;
   uint16_t char_notify_handle_;
-  uint16_t char_notify2_handle_;
   uint16_t char_command_handle_;
 
-  float min_cell_voltage_{100.0f};
-  float max_cell_voltage_{-100.0f};
-  uint8_t max_voltage_cell_{0};
-  uint8_t min_voltage_cell_{0};
-
   void decode_status_data_(const std::vector<uint8_t> &data);
+  void decode_cell_voltages_data_(const std::vector<uint8_t> &data);
   void publish_state_(binary_sensor::BinarySensor *binary_sensor, const bool &state);
   void publish_state_(sensor::Sensor *sensor, float value);
   void publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state);

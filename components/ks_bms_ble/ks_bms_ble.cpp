@@ -132,6 +132,9 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     case KS_FRAME_TYPE_STATUS:
       this->decode_status_data_(data);
       break;
+    case KS_FRAME_TYPE_CELL_VOLTAGES:
+      this->decode_cell_voltages_data_(data);
+      break;
     default:
       ESP_LOGW(TAG, "Unhandled response received (frame_type 0x%02X): %s", frame_type,
                format_hex_pretty(&data.front(), data.size()).c_str());
@@ -142,10 +145,6 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
   auto ks_get_balancer_status = [&](size_t i) -> uint32_t {
     return (data[i + 0] << 24) | (data[i + 1] << 16) | (data[i + 2] << 8) | data[i + 3];
-  };
-
-  auto ks_get_32bit = [&](size_t i) -> uint32_t {
-    return (uint32_t(ks_get_16bit(i + 0)) << 16) | (uint32_t(ks_get_16bit(i + 2)) << 0);
   };
 
   ESP_LOGI(TAG, "Status frame received");
@@ -231,6 +230,70 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   // 34    1  0x7D         End of frame
 }
 
+void KsBmsBle::decode_cell_voltages_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Cell voltages frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0x02         Frame type
+  //  2    1  0x21         Data length
+  //  3    1  0x10         Cell count
+
+  //  4    2  0x0C 0xD8    Cell voltage 1
+  //  6    2  0x0C 0xDA    Cell voltage 2
+  //  8    2  0x0C 0xD9    Cell voltage 3
+  // 10    2  0x0C 0xD8    Cell voltage 4
+  // 12    2  0x0C 0xD8    Cell voltage 5
+  // 14    2  0x0C 0xD8    Cell voltage 6
+  // 16    2  0x0C 0xD9    Cell voltage 7
+  // 18    2  0x0C 0xD8    Cell voltage 8
+  // 20    2  0x0C 0xD8    Cell voltage 9
+  // 22    2  0x0C 0xD9    Cell voltage 10
+  // 24    2  0x0C 0xD9    Cell voltage 11
+  // 26    2  0x0C 0xD8    Cell voltage 12
+  // 28    2  0x0C 0xD9    Cell voltage 13
+  // 30    2  0x0C 0xD9    Cell voltage 14
+  // 32    2  0x0C 0xD8    Cell voltage 15
+  // 34    2  0x0C 0xD6    Cell voltage 16
+
+  if (data[3] > 24) {
+    ESP_LOGW(TAG,
+             "Cell count %d isn't supported yet. The implementation supports 24 cell only. Please create an issue!",
+             data[3]);
+  }
+
+  uint8_t cells = std::min(data[3], (uint8_t) 24);
+  float min_cell_voltage = 100.0f;
+  float max_cell_voltage = -100.0f;
+  float average_cell_voltage = 0.0f;
+  uint8_t min_voltage_cell = 0;
+  uint8_t max_voltage_cell = 0;
+
+  for (uint8_t i = 0; i < cells; i++) {
+    float cell_voltage = ks_get_16bit((i * 2) + 4) * 0.001f;
+    if (cell_voltage < min_cell_voltage) {
+      min_cell_voltage = cell_voltage;
+      min_voltage_cell = i + 1;
+    }
+    if (cell_voltage > max_cell_voltage) {
+      max_cell_voltage = cell_voltage;
+      max_voltage_cell = i + 1;
+    }
+    this->publish_state_(this->cells_[i].cell_voltage_sensor_, cell_voltage);
+  }
+
+  this->publish_state_(this->min_cell_voltage_sensor_, min_cell_voltage);
+  this->publish_state_(this->max_cell_voltage_sensor_, max_cell_voltage);
+  this->publish_state_(this->min_voltage_cell_sensor_, (float) min_voltage_cell);
+  this->publish_state_(this->max_voltage_cell_sensor_, (float) max_voltage_cell);
+  this->publish_state_(this->delta_cell_voltage_sensor_, max_cell_voltage - min_cell_voltage);
+
+  // 0x7D                  End of frame
+}
+
 void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,readability-function-size)
   ESP_LOGCONFIG(TAG, "KsBmsBle:");
 
@@ -254,23 +317,11 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
 
   LOG_SENSOR("", "State of health", this->state_of_charge_sensor_);
 
-  LOG_SENSOR("", "Voltage protection bitmask", this->voltage_protection_bitmask_sensor_);
-  LOG_SENSOR("", "Current protection bitmask", this->current_protection_bitmask_sensor_);
-  LOG_SENSOR("", "Temperature protection bitmask", this->temperature_protection_bitmask_sensor_);
-  LOG_SENSOR("", "Error bitmask", this->error_bitmask_sensor_);
   LOG_SENSOR("", "Min cell voltage", this->min_cell_voltage_sensor_);
   LOG_SENSOR("", "Max cell voltage", this->max_cell_voltage_sensor_);
   LOG_SENSOR("", "Min voltage cell", this->min_voltage_cell_sensor_);
   LOG_SENSOR("", "Max voltage cell", this->max_voltage_cell_sensor_);
   LOG_SENSOR("", "Delta cell voltage", this->delta_cell_voltage_sensor_);
-  LOG_SENSOR("", "Temperature 1", this->temperatures_[0].temperature_sensor_);
-  LOG_SENSOR("", "Temperature 2", this->temperatures_[1].temperature_sensor_);
-  LOG_SENSOR("", "Temperature 3", this->temperatures_[2].temperature_sensor_);
-  LOG_SENSOR("", "Temperature 4", this->temperatures_[3].temperature_sensor_);
-  LOG_SENSOR("", "Temperature 5", this->temperatures_[4].temperature_sensor_);
-  LOG_SENSOR("", "Temperature 6", this->temperatures_[5].temperature_sensor_);
-  LOG_SENSOR("", "Temperature 7", this->temperatures_[6].temperature_sensor_);
-  LOG_SENSOR("", "Temperature 8", this->temperatures_[7].temperature_sensor_);
   LOG_SENSOR("", "Cell Voltage 1", this->cells_[0].cell_voltage_sensor_);
   LOG_SENSOR("", "Cell Voltage 2", this->cells_[1].cell_voltage_sensor_);
   LOG_SENSOR("", "Cell Voltage 3", this->cells_[2].cell_voltage_sensor_);
@@ -295,6 +346,19 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Cell Voltage 22", this->cells_[21].cell_voltage_sensor_);
   LOG_SENSOR("", "Cell Voltage 23", this->cells_[22].cell_voltage_sensor_);
   LOG_SENSOR("", "Cell Voltage 24", this->cells_[23].cell_voltage_sensor_);
+
+  LOG_SENSOR("", "Voltage protection bitmask", this->voltage_protection_bitmask_sensor_);
+  LOG_SENSOR("", "Current protection bitmask", this->current_protection_bitmask_sensor_);
+  LOG_SENSOR("", "Temperature protection bitmask", this->temperature_protection_bitmask_sensor_);
+  LOG_SENSOR("", "Error bitmask", this->error_bitmask_sensor_);
+  LOG_SENSOR("", "Temperature 1", this->temperatures_[0].temperature_sensor_);
+  LOG_SENSOR("", "Temperature 2", this->temperatures_[1].temperature_sensor_);
+  LOG_SENSOR("", "Temperature 3", this->temperatures_[2].temperature_sensor_);
+  LOG_SENSOR("", "Temperature 4", this->temperatures_[3].temperature_sensor_);
+  LOG_SENSOR("", "Temperature 5", this->temperatures_[4].temperature_sensor_);
+  LOG_SENSOR("", "Temperature 6", this->temperatures_[5].temperature_sensor_);
+  LOG_SENSOR("", "Temperature 7", this->temperatures_[6].temperature_sensor_);
+  LOG_SENSOR("", "Temperature 8", this->temperatures_[7].temperature_sensor_);
 
   LOG_TEXT_SENSOR("", "Voltage protection", this->voltage_protection_text_sensor_);
   LOG_TEXT_SENSOR("", "Current protection", this->current_protection_text_sensor_);
