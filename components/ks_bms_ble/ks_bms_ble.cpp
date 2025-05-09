@@ -138,6 +138,16 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     case KS_FRAME_TYPE_TEMPERATURES:
       this->decode_temperatures_data_(data);
       break;
+    case KS_FRAME_TYPE_SOFTWARE_VERSION:
+      this->decode_software_version_data_(data);
+      break;
+    case KS_FRAME_TYPE_HARDWARE_VERSION:
+      this->decode_hardware_version_data_(data);
+      break;
+    case KS_FRAME_TYPE_BOOTLOADER_VERSION:
+      this->decode_bootloader_version_data_(data);
+      break;
+
     default:
       ESP_LOGW(TAG, "Unhandled response received (frame_type 0x%02X): %s", frame_type,
                format_hex_pretty(&data.front(), data.size()).c_str());
@@ -325,6 +335,52 @@ void KsBmsBle::decode_temperatures_data_(const std::vector<uint8_t> &data) {
   }
 
   // 12    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_software_version_data_(const std::vector<uint8_t> &data) {
+  ESP_LOGI(TAG, "Software version frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0xF3         Frame type
+  //  2    1  0x02         Data length
+  //  3    1  0x00         Main version
+  //  4    1  0x00         Sub version
+  ESP_LOGI(TAG, "Software version: %d.%d", data[3], data[4]);
+
+  //  5    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_hardware_version_data_(const std::vector<uint8_t> &data) {
+  ESP_LOGI(TAG, "Hardware version frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0xF4         Frame type
+  //  2    1  0x03         Data length
+  //  3    1  0x02         Main version
+  //  4    1  0x02         Sub version
+  //  5    1  0x01         Build version
+  ESP_LOGI(TAG, "Hardware version: %d.%d.%d", data[3], data[4], data[5]);
+
+  //  6    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_bootloader_version_data_(const std::vector<uint8_t> &data) {
+  ESP_LOGI(TAG, "Bootloader version frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0xF5         Frame type
+  //  2    1  0x02         Data length
+  //  3    1  0x02         Main version
+  //  4    1  0x39         Sub version
+  ESP_LOGI(TAG, "Bootloader version: %d.%d", data[3], data[4]);
+
+  //  5    1  0x7D         End of frame
 }
 
 void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,readability-function-size)
