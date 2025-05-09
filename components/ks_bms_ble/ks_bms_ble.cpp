@@ -141,6 +141,9 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     case KS_FRAME_TYPE_MANUFACTURING_DATE:
       this->decode_manufacturing_date_data_(data);
       break;
+    case KS_FRAME_TYPE_MODEL_NAME:
+      this->decode_model_name_data_(data);
+      break;
     case KS_FRAME_TYPE_SOFTWARE_VERSION:
       this->decode_software_version_data_(data);
       break;
@@ -358,6 +361,26 @@ void KsBmsBle::decode_manufacturing_date_data_(const std::vector<uint8_t> &data)
   }
 
   //  6    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_model_name_data_(const std::vector<uint8_t> &data) {
+  ESP_LOGI(TAG, "Model name frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0x0A         Frame type
+  //  2    1  0x1E         Data length
+  //  3   30  0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF         Model name
+  //          0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+  //          0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+  if (data[3] == 0xff && data[4] == 0xff && data[31] == 0xff && data[32] == 0xff) {
+    ESP_LOGI(TAG, "Model name: unset");
+  } else {
+    ESP_LOGI(TAG, "Model name: %s", std::string(data.begin() + 3, data.begin() + 3 + 30).c_str());
+  }
+
+  //  33    1  0x7D         End of frame
 }
 
 void KsBmsBle::decode_software_version_data_(const std::vector<uint8_t> &data) {

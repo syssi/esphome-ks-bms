@@ -176,6 +176,7 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   void decode_cell_voltages_data_(const std::vector<uint8_t> &data);
   void decode_temperatures_data_(const std::vector<uint8_t> &data);
   void decode_manufacturing_date_data_(const std::vector<uint8_t> &data);
+  void decode_model_name_data_(const std::vector<uint8_t> &data);
   void decode_software_version_data_(const std::vector<uint8_t> &data);
   void decode_hardware_version_data_(const std::vector<uint8_t> &data);
   void decode_bootloader_version_data_(const std::vector<uint8_t> &data);
