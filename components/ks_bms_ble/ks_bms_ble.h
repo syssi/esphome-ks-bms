@@ -174,6 +174,7 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
 
   void decode_status_data_(const std::vector<uint8_t> &data);
   void decode_cell_voltages_data_(const std::vector<uint8_t> &data);
+  void decode_temperatures_data_(const std::vector<uint8_t> &data);
   void publish_state_(binary_sensor::BinarySensor *binary_sensor, const bool &state);
   void publish_state_(sensor::Sensor *sensor, float value);
   void publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state);
