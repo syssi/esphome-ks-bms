@@ -135,6 +135,9 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     case KS_FRAME_TYPE_CELL_VOLTAGES:
       this->decode_cell_voltages_data_(data);
       break;
+    case KS_FRAME_TYPE_TEMPERATURES:
+      this->decode_temperatures_data_(data);
+      break;
     default:
       ESP_LOGW(TAG, "Unhandled response received (frame_type 0x%02X): %s", frame_type,
                format_hex_pretty(&data.front(), data.size()).c_str());
@@ -290,7 +293,38 @@ void KsBmsBle::decode_cell_voltages_data_(const std::vector<uint8_t> &data) {
   this->publish_state_(this->max_voltage_cell_sensor_, (float) max_voltage_cell);
   this->publish_state_(this->delta_cell_voltage_sensor_, max_cell_voltage - min_cell_voltage);
 
-  // 0x7D                  End of frame
+  // 36    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_temperatures_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Temperatures frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0x03         Frame type
+  //  2    1  0x09         Data length
+  //  3    1  0x04         Temperature sensor count
+  //  4    2  0x0B 0x5F    Temperature 1
+  //  6    2  0x0B 0x5F    Temperature 2
+  //  8    2  0x0B 0x5F    Temperature 3
+  // 10    2  0x0B 0x5F    Temperature 4
+
+  if (data[3] > 8) {
+    ESP_LOGW(TAG,
+             "Found %d temperature probes, but current implementation only supports 8 temperature sensors. Please "
+             "create an issue!",
+             data[3]);
+  }
+
+  uint8_t temperatures = std::min(data[3], (uint8_t) 8);
+  for (uint8_t i = 0; i < temperatures; i++) {
+    this->publish_state_(this->temperatures_[i].temperature_sensor_, (ks_get_16bit((i * 2) + 4) - 2731) * 0.1f);
+  }
+
+  // 12    1  0x7D         End of frame
 }
 
 void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,readability-function-size)
