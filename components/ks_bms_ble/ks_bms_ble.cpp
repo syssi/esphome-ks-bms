@@ -260,8 +260,7 @@ void KsBmsBle::decode_cell_voltages_data_(const std::vector<uint8_t> &data) {
   // 34    2  0x0C 0xD6    Cell voltage 16
 
   if (data[3] > 24) {
-    ESP_LOGW(TAG,
-             "Cell count %d isn't supported yet. The implementation supports 24 cell only. Please create an issue!",
+    ESP_LOGW(TAG, "Found %d cells, but current implementation only supports 24 cells. Please create an issue!",
              data[3]);
   }
 
