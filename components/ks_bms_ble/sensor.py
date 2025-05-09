@@ -208,7 +208,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(CONF_CAPACITY_REMAINING): sensor.sensor_schema(
             unit_of_measurement=UNIT_AMPERE_HOURS,
             icon=ICON_CAPACITY_REMAINING,
-            accuracy_decimals=3,
+            accuracy_decimals=2,
             device_class=DEVICE_CLASS_EMPTY,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
@@ -249,7 +249,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(CONF_NOMINAL_CAPACITY): sensor.sensor_schema(
             unit_of_measurement=UNIT_AMPERE_HOURS,
             icon=ICON_NOMINAL_CAPACITY,
-            accuracy_decimals=3,
+            accuracy_decimals=2,
             device_class=DEVICE_CLASS_EMPTY,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
