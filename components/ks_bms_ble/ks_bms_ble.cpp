@@ -379,11 +379,6 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Cell Voltage 22", this->cells_[21].cell_voltage_sensor_);
   LOG_SENSOR("", "Cell Voltage 23", this->cells_[22].cell_voltage_sensor_);
   LOG_SENSOR("", "Cell Voltage 24", this->cells_[23].cell_voltage_sensor_);
-
-  LOG_SENSOR("", "Voltage protection bitmask", this->voltage_protection_bitmask_sensor_);
-  LOG_SENSOR("", "Current protection bitmask", this->current_protection_bitmask_sensor_);
-  LOG_SENSOR("", "Temperature protection bitmask", this->temperature_protection_bitmask_sensor_);
-  LOG_SENSOR("", "Error bitmask", this->error_bitmask_sensor_);
   LOG_SENSOR("", "Temperature 1", this->temperatures_[0].temperature_sensor_);
   LOG_SENSOR("", "Temperature 2", this->temperatures_[1].temperature_sensor_);
   LOG_SENSOR("", "Temperature 3", this->temperatures_[2].temperature_sensor_);
@@ -392,6 +387,11 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Temperature 6", this->temperatures_[5].temperature_sensor_);
   LOG_SENSOR("", "Temperature 7", this->temperatures_[6].temperature_sensor_);
   LOG_SENSOR("", "Temperature 8", this->temperatures_[7].temperature_sensor_);
+
+  LOG_SENSOR("", "Voltage protection bitmask", this->voltage_protection_bitmask_sensor_);
+  LOG_SENSOR("", "Current protection bitmask", this->current_protection_bitmask_sensor_);
+  LOG_SENSOR("", "Temperature protection bitmask", this->temperature_protection_bitmask_sensor_);
+  LOG_SENSOR("", "Error bitmask", this->error_bitmask_sensor_);
 
   LOG_TEXT_SENSOR("", "Voltage protection", this->voltage_protection_text_sensor_);
   LOG_TEXT_SENSOR("", "Current protection", this->current_protection_text_sensor_);
