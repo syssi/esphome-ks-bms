@@ -138,6 +138,9 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     case KS_FRAME_TYPE_TEMPERATURES:
       this->decode_temperatures_data_(data);
       break;
+    case KS_FRAME_TYPE_MANUFACTURING_DATE:
+      this->decode_manufacturing_date_data_(data);
+      break;
     case KS_FRAME_TYPE_SOFTWARE_VERSION:
       this->decode_software_version_data_(data);
       break;
@@ -335,6 +338,26 @@ void KsBmsBle::decode_temperatures_data_(const std::vector<uint8_t> &data) {
   }
 
   // 12    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_manufacturing_date_data_(const std::vector<uint8_t> &data) {
+  ESP_LOGI(TAG, "Manufacturing date frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0x09         Frame type
+  //  2    1  0x03         Data length
+  //  3    1  0xFF         Year + 2000
+  //  4    1  0xFF         Month
+  //  5    1  0xFF         Day
+  if (data[3] == 0xff && data[4] == 0xff && data[5] == 0xff) {
+    ESP_LOGI(TAG, "Manufacturing date: unset");
+  } else {
+    ESP_LOGI(TAG, "Manufacturing date: %d.%d.%d", data[3] + 2000, data[4], data[5]);
+  }
+
+  //  6    1  0x7D         End of frame
 }
 
 void KsBmsBle::decode_software_version_data_(const std::vector<uint8_t> &data) {
