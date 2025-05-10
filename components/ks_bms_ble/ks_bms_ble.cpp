@@ -25,7 +25,7 @@ static const uint8_t KS_FRAME_TYPE_MODEL_NAME = 0x0A;
 static const uint8_t KS_FRAME_TYPE_SERIAL_NUMBER = 0x0B;
 static const uint8_t KS_FRAME_TYPE_MODEL_TYPE = 0x0C;
 static const uint8_t KS_FRAME_TYPE_STATUS_BITMASK = 0x64;  // No response
-static const uint8_t KS_FRAME_TYPE_BLUETOOTH_SOFTWWARE_VERSION = 0x74;
+static const uint8_t KS_FRAME_TYPE_BLUETOOTH_SOFTWARE_VERSION = 0x74;
 static const uint8_t KS_FRAME_TYPE_SOFTWARE_VERSION = 0xF3;  // No response
 static const uint8_t KS_FRAME_TYPE_HARDWARE_VERSION = 0xF4;
 static const uint8_t KS_FRAME_TYPE_BOOTLOADER_VERSION = 0xF5;
@@ -151,7 +151,7 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     case KS_FRAME_TYPE_MODEL_TYPE:
       this->decode_model_type_data_(data);
       break;
-    case KS_FRAME_TYPE_BLUETOOTH_SOFTWWARE_VERSION:
+    case KS_FRAME_TYPE_BLUETOOTH_SOFTWARE_VERSION:
       this->decode_bluetooth_software_version_data_(data);
       break;
     case KS_FRAME_TYPE_SOFTWARE_VERSION:
