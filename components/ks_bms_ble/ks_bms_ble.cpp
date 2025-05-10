@@ -147,6 +147,9 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     case KS_FRAME_TYPE_SERIAL_NUMBER:
       this->decode_serial_number_data_(data);
       break;
+    case KS_FRAME_TYPE_MODEL_TYPE:
+      this->decode_model_type_data_(data);
+      break;
     case KS_FRAME_TYPE_SOFTWARE_VERSION:
       this->decode_software_version_data_(data);
       break;
@@ -394,7 +397,7 @@ void KsBmsBle::decode_serial_number_data_(const std::vector<uint8_t> &data) {
   //  0    1  0x7B         Start of frame
   //  1    1  0x0B         Frame type
   //  2    1  0x13         Data length
-  //  3   19  0x43 0x45 0x52 0x32 0x34 0x31 0x30 0x2D 0x30 0x31
+  //  3   19  0x43 0x45 0x52 0x32 0x34 0x31 0x30 0x2D 0x30 0x31         Serial number
   //          0x38 0x2D 0x30 0x33 0x30 0x2D 0x30 0x32 0x33
   if (data[3] == 0xff && data[4] == 0xff && data[14] == 0xff && data[15] == 0xff) {
     ESP_LOGI(TAG, "Serial number: unset");
@@ -403,6 +406,25 @@ void KsBmsBle::decode_serial_number_data_(const std::vector<uint8_t> &data) {
   }
 
   //  16   1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_model_type_data_(const std::vector<uint8_t> &data) {
+  ESP_LOGI(TAG, "Model type frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0x0C         Frame type
+  //  2    1  0x14
+  //  3   20  0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF         Model type
+  //          0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+  if (data[3] == 0xff && data[4] == 0xff && data[21] == 0xff && data[22] == 0xff) {
+    ESP_LOGI(TAG, "Model type: unset");
+  } else {
+    ESP_LOGI(TAG, "Model type: %s", std::string(data.begin() + 3, data.begin() + 3 + 20).c_str());
+  }
+
+  // 23    1  0x7D         End of frame
 }
 
 void KsBmsBle::decode_software_version_data_(const std::vector<uint8_t> &data) {
