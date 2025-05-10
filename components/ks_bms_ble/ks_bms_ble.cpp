@@ -24,7 +24,8 @@ static const uint8_t KS_FRAME_TYPE_MANUFACTURING_DATE = 0x09;
 static const uint8_t KS_FRAME_TYPE_MODEL_NAME = 0x0A;
 static const uint8_t KS_FRAME_TYPE_SERIAL_NUMBER = 0x0B;
 static const uint8_t KS_FRAME_TYPE_MODEL_TYPE = 0x0C;
-static const uint8_t KS_FRAME_TYPE_STATUS_BITMASK = 0x64;    // No response
+static const uint8_t KS_FRAME_TYPE_STATUS_BITMASK = 0x64;  // No response
+static const uint8_t KS_FRAME_TYPE_BLUETOOTH_SOFTWWARE_VERSION = 0x74;
 static const uint8_t KS_FRAME_TYPE_SOFTWARE_VERSION = 0xF3;  // No response
 static const uint8_t KS_FRAME_TYPE_HARDWARE_VERSION = 0xF4;
 static const uint8_t KS_FRAME_TYPE_BOOTLOADER_VERSION = 0xF5;
@@ -149,6 +150,9 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
       break;
     case KS_FRAME_TYPE_MODEL_TYPE:
       this->decode_model_type_data_(data);
+      break;
+    case KS_FRAME_TYPE_BLUETOOTH_SOFTWWARE_VERSION:
+      this->decode_bluetooth_software_version_data_(data);
       break;
     case KS_FRAME_TYPE_SOFTWARE_VERSION:
       this->decode_software_version_data_(data);
@@ -425,6 +429,26 @@ void KsBmsBle::decode_model_type_data_(const std::vector<uint8_t> &data) {
   }
 
   // 23    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_bluetooth_software_version_data_(const std::vector<uint8_t> &data) {
+  ESP_LOGI(TAG, "Bluetooth software version frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  // Byte Len Payload      Description                      Unit  Precision
+  //  0    1  0x7B         Start of frame
+  //  1    1  0x74         Frame type
+  //  2    1  0x18         Data length
+  //  3   24  0x4B 0x53 0x5F 0x42 0x4C 0x45 0x5F 0x56 0x65 0x72
+  //          0x31 0x2E 0x30 0x2E 0x30 0x5F 0x32 0x30 0x32 0x34
+  //          0x30 0x37 0x31 0x36
+  if (data[3] == 0xff && data[4] == 0xff && data[25] == 0xff && data[26] == 0xff) {
+    ESP_LOGI(TAG, "Bluetooth software version: unset");
+  } else {
+    ESP_LOGI(TAG, "Bluetooth software version: %s", std::string(data.begin() + 3, data.begin() + 3 + 24).c_str());
+  }
+
+  // 27    1  0x7D         End of frame
 }
 
 void KsBmsBle::decode_software_version_data_(const std::vector<uint8_t> &data) {

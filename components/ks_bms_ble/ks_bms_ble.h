@@ -179,6 +179,7 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   void decode_model_name_data_(const std::vector<uint8_t> &data);
   void decode_serial_number_data_(const std::vector<uint8_t> &data);
   void decode_model_type_data_(const std::vector<uint8_t> &data);
+  void decode_bluetooth_software_version_data_(const std::vector<uint8_t> &data);
   void decode_software_version_data_(const std::vector<uint8_t> &data);
   void decode_hardware_version_data_(const std::vector<uint8_t> &data);
   void decode_bootloader_version_data_(const std::vector<uint8_t> &data);
