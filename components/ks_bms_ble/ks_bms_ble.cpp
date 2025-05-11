@@ -122,7 +122,8 @@ void KsBmsBle::update() {
 }
 
 void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8_t> &data) {
-  if (data[0] != KS_PKT_START || data.back() != KS_PKT_END || data.size() > MAX_RESPONSE_SIZE) {
+  if (data[0] != KS_PKT_START || data.back() != KS_PKT_END || (data.size() > 3 && data.size() != data[2] + 4) ||
+      data.size() > MAX_RESPONSE_SIZE) {
     ESP_LOGW(TAG, "Invalid response received: %s", format_hex_pretty(&data.front(), data.size()).c_str());
     return;
   }
