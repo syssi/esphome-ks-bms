@@ -254,7 +254,7 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
 
   // 33    2  0x00 0x64    State of Health (if available)
   if (data[2] > 19) {
-    ESP_LOGI(TAG, "State of health: %d%%", ks_get_16bit(33));
+    this->publish_state_(this->state_of_health_sensor_, ks_get_16bit(33) * 1.0f);
   }
 
   // 34    1  0x7D         End of frame
@@ -558,6 +558,7 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Temperature 6", this->temperatures_[5].temperature_sensor_);
   LOG_SENSOR("", "Temperature 7", this->temperatures_[6].temperature_sensor_);
   LOG_SENSOR("", "Temperature 8", this->temperatures_[7].temperature_sensor_);
+  LOG_SENSOR("", "State of health", this->state_of_health_sensor_);
 
   LOG_SENSOR("", "Voltage protection bitmask", this->voltage_protection_bitmask_sensor_);
   LOG_SENSOR("", "Current protection bitmask", this->current_protection_bitmask_sensor_);
