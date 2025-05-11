@@ -227,11 +227,14 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   ESP_LOGI(TAG, "Balancer status: %lu", (unsigned long) ks_get_balancer_status(25));
 
   // 29    2  0x00 0x0C    FET control status
-  //                         Bit 0: Charging
-  //                         Bit 1: Discharging
-  //                         Bit 2: Charging error
-  //                         Bit 3: Discharging error
-  ESP_LOGI(TAG, "FET control status: %d", ks_get_16bit(29));
+  //                         Bit 0: Balancer charging
+  //                         Bit 1: Balancer discharging
+  //                         Bit 2: Charging
+  //                         Bit 3: Discharging
+  ESP_LOGD(TAG, "FET control status: %d (0x%02X 0x%02X)", ks_get_16bit(29), data[29], data[30]);
+  this->publish_state_(this->charging_binary_sensor_, (bool) check_bit_(ks_get_16bit(29), 8));
+  this->publish_state_(this->discharging_binary_sensor_, (bool) check_bit_(ks_get_16bit(29), 4));
+  // @TODO: Add balancing indicator
 
   // 31    2  0x00 0x00    Protection status
   //                         Bit 0: Over Current Protection
