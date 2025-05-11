@@ -231,7 +231,9 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   //                         Bit 1: Discharging
   //                         Bit 2: Charging error
   //                         Bit 3: Discharging error
-  ESP_LOGI(TAG, "FET control status: %d", ks_get_16bit(29));
+  this->publish_state_(this->charging_binary_sensor_, (bool) check_bit_(tianpower_get_16bit(3), 1));
+  this->publish_state_(this->discharging_binary_sensor_, (bool) check_bit_(tianpower_get_16bit(3), 2));
+  // @TODO: Add charging error and discharging error binary sensors
 
   // 31    2  0x00 0x00    Protection status
   //                         Bit 0: Over Current Protection
