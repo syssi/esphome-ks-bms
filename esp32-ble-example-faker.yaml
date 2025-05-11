@@ -102,3 +102,24 @@ interval:
           id(bms0).on_ks_bms_ble_data(0x00, {
             0x7B, 0xF5, 0x02, 0x02, 0x39, 0x7D
           });
+
+      # Invalid frame: End of frame missing
+      - delay: 1s
+      - lambda: |-
+          id(bms0).on_ks_bms_ble_data(0x00, {
+            0x7B, 0xF5, 0x02, 0x02, 0x39
+          });
+
+      # Invalid frame: Too short
+      - delay: 1s
+      - lambda: |-
+          id(bms0).on_ks_bms_ble_data(0x00, {
+            0x7B, 0xF5, 0x02, 0x02, 0x7D
+          });
+
+      # Invalid frame: Too long
+      - delay: 1s
+      - lambda: |-
+          id(bms0).on_ks_bms_ble_data(0x00, {
+            0x7B, 0xF5, 0x02, 0x02, 0x39, 0x39, 0x7D
+          });
