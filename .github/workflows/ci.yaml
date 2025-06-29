@@ -304,8 +304,6 @@ jobs:
         if: always()
 
   clang-tidy:
-    # @FIXME: Temporary disabled
-    if: false
     name: ${{ matrix.name }}
     runs-on: ubuntu-24.04
     needs:
