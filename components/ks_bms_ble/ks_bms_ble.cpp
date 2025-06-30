@@ -306,6 +306,7 @@ void KsBmsBle::decode_cell_voltages_data_(const std::vector<uint8_t> &data) {
 
   for (uint8_t i = 0; i < cells; i++) {
     float cell_voltage = ks_get_16bit((i * 2) + 4) * 0.001f;
+    average_cell_voltage = average_cell_voltage + cell_voltage;
     if (cell_voltage < min_cell_voltage) {
       min_cell_voltage = cell_voltage;
       min_voltage_cell = i + 1;
@@ -316,12 +317,14 @@ void KsBmsBle::decode_cell_voltages_data_(const std::vector<uint8_t> &data) {
     }
     this->publish_state_(this->cells_[i].cell_voltage_sensor_, cell_voltage);
   }
+  average_cell_voltage = average_cell_voltage / cells;
 
   this->publish_state_(this->min_cell_voltage_sensor_, min_cell_voltage);
   this->publish_state_(this->max_cell_voltage_sensor_, max_cell_voltage);
   this->publish_state_(this->min_voltage_cell_sensor_, (float) min_voltage_cell);
   this->publish_state_(this->max_voltage_cell_sensor_, (float) max_voltage_cell);
   this->publish_state_(this->delta_cell_voltage_sensor_, max_cell_voltage - min_cell_voltage);
+  this->publish_state_(this->average_cell_voltage_sensor_, average_cell_voltage);
 
   // 36    1  0x7D         End of frame
 }
