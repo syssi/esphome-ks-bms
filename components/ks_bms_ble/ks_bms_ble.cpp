@@ -44,6 +44,24 @@ static const uint8_t KS_COMMAND_QUEUE[KS_COMMAND_QUEUE_SIZE] = {
     KS_FRAME_TYPE_BOOTLOADER_VERSION,
 };
 
+static const uint8_t ERRORS_SIZE = 16;
+static const char *const ERRORS[ERRORS_SIZE] = {"Over current protection",
+                                                "Under current protection",
+                                                "Over voltage protection",
+                                                "Under voltage protection",
+                                                "Over temperature charge protection",
+                                                "Under temperature charge protection",
+                                                "Over temperature discharge protection",
+                                                "Under temperature discharge protection",
+                                                "Over current charge protection",
+                                                "Over current discharge protection",
+                                                "Short circuit protection",
+                                                "Analog front-end error",
+                                                "Soft lock MOS",
+                                                "Charge MOSFET error",
+                                                "Discharge MOSFET error",
+                                                "Reserved"};
+
 void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if,
                                    esp_ble_gattc_cb_param_t *param) {
   switch (event) {
@@ -237,23 +255,25 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   // @TODO: Add balancing indicator
 
   // 31    2  0x00 0x00    Protection status
-  //                         Bit 0: Over Current Protection
-  //                         Bit 1: Under Current Protection
-  //                         Bit 2: Over Voltage Protection
-  //                         Bit 3: Under Voltage Protection
-  //                         Bit 4: Over Temperature Charge Protection
-  //                         Bit 5: Under Temperature Charge Protection
-  //                         Bit 6: Over Temperature Discharge Protection
-  //                         Bit 7: Under Temperature Discharge Protection
-  //                         Bit 8: Over Current Charge Protection
-  //                         Bit 9: Over Current Discharge Protection
+  //                         Bit 0:  Over Current Protection
+  //                         Bit 1:  Under Current Protection
+  //                         Bit 2:  Over Voltage Protection
+  //                         Bit 3:  Under Voltage Protection
+  //                         Bit 4:  Over Temperature Charge Protection
+  //                         Bit 5:  Under Temperature Charge Protection
+  //                         Bit 6:  Over Temperature Discharge Protection
+  //                         Bit 7:  Under Temperature Discharge Protection
+  //                         Bit 8:  Over Current Charge Protection
+  //                         Bit 9:  Over Current Discharge Protection
   //                         Bit 10: Short Circuit Protection
   //                         Bit 11: Analog Front-End Error
   //                         Bit 12: Soft Lock MOS
   //                         Bit 13: Charge MOSFET Error
   //                         Bit 14: Discharge MOSFET Error
-  //                         Bit 15:Reserved
-  ESP_LOGI(TAG, "Protection status: %d", ks_get_16bit(31));
+  //                         Bit 15: Reserved
+  uint16_t error_bitmask = ks_get_16bit(31);
+  this->publish_state_(this->error_bitmask_sensor_, error_bitmask);
+  this->publish_state_(this->errors_text_sensor_, this->bitmask_to_string_(ERRORS, ERRORS_SIZE, error_bitmask));
 
   // 33    2  0x00 0x64    State of Health (if available)
   if (data[2] > 19) {
