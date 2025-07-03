@@ -91,6 +91,8 @@ sensor:
       name: "${name} state of charge"
     nominal_capacity:
       name: "${name} nominal capacity"
+    full_charge_capacity:
+      name: "${name} full charge capacity"
     charging_cycles:
       name: "${name} charging cycles"
     min_cell_voltage:

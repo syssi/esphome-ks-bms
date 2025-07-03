@@ -230,7 +230,7 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   this->publish_state_(this->capacity_remaining_sensor_, ks_get_16bit(15) * 0.01f);
 
   // 17    2  0x75 0x30    Full capacity
-  ESP_LOGI(TAG, "Full capacity: %.2f Ah", ks_get_16bit(17) * 0.01f);
+  this->publish_state_(this->full_charge_capacity_sensor_, ks_get_16bit(17) * 0.01f);
 
   // 19    2  0x75 0x30    Nominal capacity
   this->publish_state_(this->nominal_capacity_sensor_, ks_get_16bit(19) * 0.01f);

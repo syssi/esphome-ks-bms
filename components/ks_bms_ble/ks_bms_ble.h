@@ -63,6 +63,9 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   void set_nominal_capacity_sensor(sensor::Sensor *nominal_capacity_sensor) {
     nominal_capacity_sensor_ = nominal_capacity_sensor;
   }
+  void set_full_charge_capacity_sensor(sensor::Sensor *full_charge_capacity_sensor) {
+    full_charge_capacity_sensor_ = full_charge_capacity_sensor;
+  }
   void set_charging_cycles_sensor(sensor::Sensor *charging_cycles_sensor) {
     charging_cycles_sensor_ = charging_cycles_sensor;
   }
@@ -141,6 +144,7 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   sensor::Sensor *error_bitmask_sensor_;
   sensor::Sensor *state_of_charge_sensor_;
   sensor::Sensor *nominal_capacity_sensor_;
+  sensor::Sensor *full_charge_capacity_sensor_;
   sensor::Sensor *charging_cycles_sensor_;
   sensor::Sensor *min_cell_voltage_sensor_;
   sensor::Sensor *max_cell_voltage_sensor_;
