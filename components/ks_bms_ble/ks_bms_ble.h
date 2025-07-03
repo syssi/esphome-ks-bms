@@ -85,10 +85,6 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   void set_balanced_cell_bitmask_sensor(sensor::Sensor *balanced_cell_bitmask_sensor) {
     balanced_cell_bitmask_sensor_ = balanced_cell_bitmask_sensor;
   }
-  void set_balanced_cell_sensor(sensor::Sensor *balanced_cell_sensor) { balanced_cell_sensor_ = balanced_cell_sensor; }
-  void set_balancer_status_sensor(sensor::Sensor *balancer_status_sensor) {
-    balancer_status_sensor_ = balancer_status_sensor;
-  }
 
   void set_min_cell_voltage_sensor(sensor::Sensor *min_cell_voltage_sensor) {
     min_cell_voltage_sensor_ = min_cell_voltage_sensor;
@@ -169,8 +165,6 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   sensor::Sensor *state_of_health_sensor_;
   sensor::Sensor *balanced_cell_sensor_;
   sensor::Sensor *balanced_cell_bitmask_sensor_;
-  sensor::Sensor *balanced_cell_sensor_;
-  sensor::Sensor *balancer_status_sensor_;
 
   text_sensor::TextSensor *software_version_text_sensor_;
   text_sensor::TextSensor *device_model_text_sensor_;
