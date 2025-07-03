@@ -241,7 +241,7 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   // 23    2  0x00 0x01    Number of cycles
   this->publish_state_(this->charging_cycles_sensor_, ks_get_16bit(23) * 1.0f);
 
-  // 25    4  0x00 0x00 0x00 0x00    Balancer status (balanced cell)
+  // 25    4  0x00 0x00 0x00 0x00    Balanced cell
   uint32_t balanced_cell_bitmask = ks_get_balancer_status(25);
   this->publish_state_(this->balanced_cell_bitmask_sensor_, (float) balanced_cell_bitmask);
 
