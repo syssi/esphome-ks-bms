@@ -45,24 +45,22 @@ static const uint8_t KS_COMMAND_QUEUE[KS_COMMAND_QUEUE_SIZE] = {
 };
 
 static const uint8_t ERRORS_SIZE = 16;
-static const char *const ERRORS[ERRORS_SIZE] = {
-    "Over current protection",
-    "Under current protection",
-    "Over voltage protection",
-    "Under voltage protection",
-    "Over temperature charge protection",
-    "Under temperature charge protection",
-    "Over temperature discharge protection",
-    "Under temperature discharge protection",
-    "Over current charge protection",
-    "Over current discharge protection",
-    "Short circuit protection",
-    "Analog front-end error",
-    "Soft lock MOS",
-    "Charge MOSFET error",
-    "Discharge MOSFET error",
-    "Reserved"
-};
+static const char *const ERRORS[ERRORS_SIZE] = {"Over current protection",
+                                                "Under current protection",
+                                                "Over voltage protection",
+                                                "Under voltage protection",
+                                                "Over temperature charge protection",
+                                                "Under temperature charge protection",
+                                                "Over temperature discharge protection",
+                                                "Under temperature discharge protection",
+                                                "Over current charge protection",
+                                                "Over current discharge protection",
+                                                "Short circuit protection",
+                                                "Analog front-end error",
+                                                "Soft lock MOS",
+                                                "Charge MOSFET error",
+                                                "Discharge MOSFET error",
+                                                "Reserved"};
 
 void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if,
                                    esp_ble_gattc_cb_param_t *param) {
