@@ -39,6 +39,7 @@ CONF_TEMPERATURE_PROTECTION_BITMASK = "temperature_protection_bitmask"
 CONF_ERROR_BITMASK = "error_bitmask"
 CONF_STATE_OF_CHARGE = "state_of_charge"
 CONF_NOMINAL_CAPACITY = "nominal_capacity"
+CONF_FULL_CHARGE_CAPACITY = "full_charge_capacity"
 CONF_CHARGING_CYCLES = "charging_cycles"
 CONF_MIN_CELL_VOLTAGE = "min_cell_voltage"
 CONF_MAX_CELL_VOLTAGE = "max_cell_voltage"
@@ -89,6 +90,7 @@ CONF_TEMPERATURE_8 = "temperature_8"
 ICON_CURRENT_DC = "mdi:current-dc"
 ICON_CAPACITY_REMAINING = "mdi:battery-50"
 ICON_NOMINAL_CAPACITY = "mdi:battery-50"
+ICON_FULL_CHARGE_CAPACITY = "mdi:battery-charging-100"
 ICON_CHARGING_CYCLES = "mdi:battery-sync"
 ICON_MIN_CELL_VOLTAGE = "mdi:battery-minus-outline"
 ICON_MAX_CELL_VOLTAGE = "mdi:battery-plus-outline"
@@ -153,6 +155,7 @@ SENSORS = [
     CONF_ERROR_BITMASK,
     CONF_STATE_OF_CHARGE,
     CONF_NOMINAL_CAPACITY,
+    CONF_FULL_CHARGE_CAPACITY,
     CONF_CHARGING_CYCLES,
     CONF_MIN_CELL_VOLTAGE,
     CONF_MAX_CELL_VOLTAGE,
@@ -249,6 +252,13 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(CONF_NOMINAL_CAPACITY): sensor.sensor_schema(
             unit_of_measurement=UNIT_AMPERE_HOURS,
             icon=ICON_NOMINAL_CAPACITY,
+            accuracy_decimals=2,
+            device_class=DEVICE_CLASS_EMPTY,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_FULL_CHARGE_CAPACITY): sensor.sensor_schema(
+            unit_of_measurement=UNIT_AMPERE_HOURS,
+            icon=ICON_FULL_CHARGE_CAPACITY,
             accuracy_decimals=2,
             device_class=DEVICE_CLASS_EMPTY,
             state_class=STATE_CLASS_MEASUREMENT,
