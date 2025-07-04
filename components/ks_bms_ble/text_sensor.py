@@ -15,6 +15,7 @@ CONF_VOLTAGE_PROTECTION = "voltage_protection"
 CONF_CURRENT_PROTECTION = "current_protection"
 CONF_TEMPERATURE_PROTECTION = "temperature_protection"
 CONF_ERRORS = "errors"
+CONF_BALANCER_STATUS = "balancer_status"
 
 ICON_DEVICE_MODEL = "mdi:chip"
 ICON_SOFTWARE_VERSION = "mdi:numeric"
@@ -22,6 +23,7 @@ ICON_VOLTAGE_PROTECTION = "mdi:alert-circle-outline"
 ICON_CURRENT_PROTECTION = "mdi:alert-circle-outline"
 ICON_TEMPERATURE_PROTECTION = "mdi:alert-circle-outline"
 ICON_ERRORS = "mdi:alert-circle-outline"
+ICON_BALANCER_STATUS = "mdi:battery-sync"
 
 TEXT_SENSORS = [
     CONF_SOFTWARE_VERSION,
@@ -30,6 +32,7 @@ TEXT_SENSORS = [
     CONF_CURRENT_PROTECTION,
     CONF_TEMPERATURE_PROTECTION,
     CONF_ERRORS,
+    CONF_BALANCER_STATUS,
 ]
 
 CONFIG_SCHEMA = cv.Schema(
@@ -52,6 +55,9 @@ CONFIG_SCHEMA = cv.Schema(
         ),
         cv.Optional(CONF_ERRORS): text_sensor.text_sensor_schema(
             text_sensor.TextSensor, icon=ICON_ERRORS
+        ),
+        cv.Optional(CONF_BALANCER_STATUS): text_sensor.text_sensor_schema(
+            text_sensor.TextSensor, icon=ICON_BALANCER_STATUS
         ),
     }
 )
