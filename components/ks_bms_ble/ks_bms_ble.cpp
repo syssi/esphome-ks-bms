@@ -241,18 +241,31 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   // 23    2  0x00 0x01    Number of cycles
   this->publish_state_(this->charging_cycles_sensor_, ks_get_16bit(23) * 1.0f);
 
-  // 25    4  0x00 0x00 0x00 0x00    Balancer status (balanced cell)
-  ESP_LOGI(TAG, "Balancer status: %lu", (unsigned long) ks_get_balancer_status(25));
+  // 25    4  0x00 0x00 0x00 0x00    Balanced cell
+  uint32_t balanced_cell_bitmask = ks_get_balancer_status(25);
+  this->publish_state_(this->balanced_cell_bitmask_sensor_, (float) balanced_cell_bitmask);
+
+  uint8_t balanced_cell = 0;
+  if (balanced_cell_bitmask != 0) {
+    for (uint8_t i = 0; i < 32; i++) {
+      if (balanced_cell_bitmask & (1 << i)) {
+        balanced_cell = i + 1;
+        break;
+      }
+    }
+  }
+  this->publish_state_(this->balanced_cell_sensor_, (float) balanced_cell);
 
   // 29    2  0x00 0x0C    FET control status
   //                         Bit 0: Balancer charging
   //                         Bit 1: Balancer discharging
   //                         Bit 2: Charging
   //                         Bit 3: Discharging
-  ESP_LOGD(TAG, "FET control status: %d (0x%02X 0x%02X)", ks_get_16bit(29), data[29], data[30]);
-  this->publish_state_(this->charging_binary_sensor_, (bool) check_bit_(ks_get_16bit(29), 8));
-  this->publish_state_(this->discharging_binary_sensor_, (bool) check_bit_(ks_get_16bit(29), 4));
-  // @TODO: Add balancing indicator
+  uint16_t fet_control_status = ks_get_16bit(29);
+  this->publish_state_(this->charging_binary_sensor_, (bool) check_bit_(fet_control_status, 8));
+  this->publish_state_(this->discharging_binary_sensor_, (bool) check_bit_(fet_control_status, 4));
+  this->publish_state_(this->balancer_status_text_sensor_,
+                       this->fet_control_status_to_balancer_status_text_(fet_control_status));
 
   // 31    2  0x00 0x00    Protection status
   //                         Bit 0:  Over Current Protection
@@ -585,6 +598,8 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Temperature 7", this->temperatures_[6].temperature_sensor_);
   LOG_SENSOR("", "Temperature 8", this->temperatures_[7].temperature_sensor_);
   LOG_SENSOR("", "State of health", this->state_of_health_sensor_);
+  LOG_SENSOR("", "Balanced cell", this->balanced_cell_sensor_);
+  LOG_SENSOR("", "Balanced cell bitmask", this->balanced_cell_bitmask_sensor_);
 
   LOG_SENSOR("", "Voltage protection bitmask", this->voltage_protection_bitmask_sensor_);
   LOG_SENSOR("", "Current protection bitmask", this->current_protection_bitmask_sensor_);
@@ -595,6 +610,7 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_TEXT_SENSOR("", "Current protection", this->current_protection_text_sensor_);
   LOG_TEXT_SENSOR("", "Temperature protection", this->temperature_protection_text_sensor_);
   LOG_TEXT_SENSOR("", "Errors", this->errors_text_sensor_);
+  LOG_TEXT_SENSOR("", "Balancer status", this->balancer_status_text_sensor_);
 }
 
 void KsBmsBle::publish_state_(binary_sensor::BinarySensor *binary_sensor, const bool &state) {
@@ -659,6 +675,16 @@ std::string KsBmsBle::bitmask_to_string_(const char *const messages[], const uin
     }
   }
   return values;
+}
+
+std::string KsBmsBle::fet_control_status_to_balancer_status_text_(uint16_t fet_control_status) {
+  if (check_bit_(fet_control_status, 1)) {
+    return "Charging";
+  }
+  if (check_bit_(fet_control_status, 2)) {
+    return "Discharging";
+  }
+  return "Idle";
 }
 
 }  // namespace ks_bms_ble

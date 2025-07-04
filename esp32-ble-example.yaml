@@ -115,6 +115,10 @@ sensor:
       name: "${name} mosfet temperature"
     state_of_health:
       name: "${name} state of health"
+    balanced_cell:
+      name: "${name} balanced cell"
+    balanced_cell_bitmask:
+      name: "${name} balanced cell bitmask"
     temperature_1:
       name: "${name} temperature 1"
     temperature_2:
@@ -171,3 +175,5 @@ text_sensor:
       name: "${name} temperature protection"
     errors:
       name: "${name} errors"
+    balancer_status:
+      name: "${name} balancer status"

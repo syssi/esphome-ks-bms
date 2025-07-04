@@ -81,6 +81,10 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   void set_state_of_health_sensor(sensor::Sensor *state_of_health_sensor) {
     state_of_health_sensor_ = state_of_health_sensor;
   }
+  void set_balanced_cell_sensor(sensor::Sensor *balanced_cell_sensor) { balanced_cell_sensor_ = balanced_cell_sensor; }
+  void set_balanced_cell_bitmask_sensor(sensor::Sensor *balanced_cell_bitmask_sensor) {
+    balanced_cell_bitmask_sensor_ = balanced_cell_bitmask_sensor;
+  }
 
   void set_min_cell_voltage_sensor(sensor::Sensor *min_cell_voltage_sensor) {
     min_cell_voltage_sensor_ = min_cell_voltage_sensor;
@@ -123,6 +127,9 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
     temperature_protection_text_sensor_ = temperature_protection_text_sensor;
   }
   void set_errors_text_sensor(text_sensor::TextSensor *errors_text_sensor) { errors_text_sensor_ = errors_text_sensor; }
+  void set_balancer_status_text_sensor(text_sensor::TextSensor *balancer_status_text_sensor) {
+    balancer_status_text_sensor_ = balancer_status_text_sensor;
+  }
 
   void write_register(uint8_t address, uint16_t value);
   void on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8_t> &data);
@@ -156,6 +163,8 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   sensor::Sensor *ambient_temperature_sensor_;
   sensor::Sensor *mosfet_temperature_sensor_;
   sensor::Sensor *state_of_health_sensor_;
+  sensor::Sensor *balanced_cell_sensor_;
+  sensor::Sensor *balanced_cell_bitmask_sensor_;
 
   text_sensor::TextSensor *software_version_text_sensor_;
   text_sensor::TextSensor *device_model_text_sensor_;
@@ -163,6 +172,7 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   text_sensor::TextSensor *current_protection_text_sensor_;
   text_sensor::TextSensor *temperature_protection_text_sensor_;
   text_sensor::TextSensor *errors_text_sensor_;
+  text_sensor::TextSensor *balancer_status_text_sensor_;
 
   struct Cell {
     sensor::Sensor *cell_voltage_sensor_{nullptr};
@@ -192,6 +202,7 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   void publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state);
   bool send_command_(uint8_t function);
   std::string bitmask_to_string_(const char *const messages[], const uint8_t &messages_size, const uint16_t &mask);
+  std::string fet_control_status_to_balancer_status_text_(uint16_t fet_control_status);
 
   bool check_bit_(uint16_t mask, uint16_t flag) { return (mask & flag) == flag; }
 };
