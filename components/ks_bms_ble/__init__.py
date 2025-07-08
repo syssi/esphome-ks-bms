@@ -15,6 +15,12 @@ KsBmsBle = ks_bms_ble_ns.class_(
     "KsBmsBle", ble_client.BLEClientNode, cg.PollingComponent
 )
 
+KS_BMS_BLE_COMPONENT_SCHEMA = cv.Schema(
+    {
+        cv.GenerateID(CONF_KS_BMS_BLE_ID): cv.use_id(KsBmsBle),
+    }
+)
+
 CONFIG_SCHEMA = (
     cv.Schema(
         {

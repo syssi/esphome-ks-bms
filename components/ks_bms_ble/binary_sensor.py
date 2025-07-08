@@ -3,7 +3,7 @@ from esphome.components import binary_sensor
 import esphome.config_validation as cv
 from esphome.const import CONF_ID
 
-from . import CONF_KS_BMS_BLE_ID, KsBmsBle
+from . import CONF_KS_BMS_BLE_ID, KS_BMS_BLE_COMPONENT_SCHEMA
 
 DEPENDENCIES = ["ks_bms_ble"]
 
@@ -19,9 +19,8 @@ BINARY_SENSORS = [
     CONF_LIMITING_CURRENT,
 ]
 
-CONFIG_SCHEMA = cv.Schema(
+CONFIG_SCHEMA = KS_BMS_BLE_COMPONENT_SCHEMA.extend(
     {
-        cv.GenerateID(CONF_KS_BMS_BLE_ID): cv.use_id(KsBmsBle),
         cv.Optional(CONF_CHARGING): binary_sensor.binary_sensor_schema(
             icon="mdi:battery-charging"
         ),
