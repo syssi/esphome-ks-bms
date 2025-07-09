@@ -554,17 +554,19 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Charging power", this->charging_power_sensor_);
   LOG_SENSOR("", "Discharging power", this->discharging_power_sensor_);
   LOG_SENSOR("", "Capacity remaining", this->capacity_remaining_sensor_);
+  LOG_SENSOR("", "Full charge capacity", this->full_charge_capacity_sensor_);
 
   LOG_SENSOR("", "Nominal capacity", this->nominal_capacity_sensor_);
   LOG_SENSOR("", "Charging cycles", this->charging_cycles_sensor_);
 
-  LOG_SENSOR("", "State of health", this->state_of_charge_sensor_);
+  LOG_SENSOR("", "State of health", this->state_of_health_sensor_);
 
   LOG_SENSOR("", "Min cell voltage", this->min_cell_voltage_sensor_);
   LOG_SENSOR("", "Max cell voltage", this->max_cell_voltage_sensor_);
   LOG_SENSOR("", "Min voltage cell", this->min_voltage_cell_sensor_);
   LOG_SENSOR("", "Max voltage cell", this->max_voltage_cell_sensor_);
   LOG_SENSOR("", "Delta cell voltage", this->delta_cell_voltage_sensor_);
+  LOG_SENSOR("", "Average cell voltage", this->average_cell_voltage_sensor_);
   LOG_SENSOR("", "Cell Voltage 1", this->cells_[0].cell_voltage_sensor_);
   LOG_SENSOR("", "Cell Voltage 2", this->cells_[1].cell_voltage_sensor_);
   LOG_SENSOR("", "Cell Voltage 3", this->cells_[2].cell_voltage_sensor_);
