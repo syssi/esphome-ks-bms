@@ -608,6 +608,12 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Temperature protection bitmask", this->temperature_protection_bitmask_sensor_);
   LOG_SENSOR("", "Error bitmask", this->error_bitmask_sensor_);
 
+  LOG_BINARY_SENSOR("", "Charging", this->charging_binary_sensor_);
+  LOG_BINARY_SENSOR("", "Discharging", this->discharging_binary_sensor_);
+  LOG_BINARY_SENSOR("", "Limiting Current", this->limiting_current_binary_sensor_);
+
+  LOG_TEXT_SENSOR("", "Software Version", this->software_version_text_sensor_);
+  LOG_TEXT_SENSOR("", "Device Model", this->device_model_text_sensor_);
   LOG_TEXT_SENSOR("", "Voltage protection", this->voltage_protection_text_sensor_);
   LOG_TEXT_SENSOR("", "Current protection", this->current_protection_text_sensor_);
   LOG_TEXT_SENSOR("", "Temperature protection", this->temperature_protection_text_sensor_);
