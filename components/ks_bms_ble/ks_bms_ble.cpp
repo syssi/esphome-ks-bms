@@ -88,7 +88,7 @@ void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gat
     case ESP_GATTC_SEARCH_CMPL_EVT: {
       auto *char_notify = this->parent_->get_characteristic(KS_BMS_SERVICE_UUID, KS_BMS_NOTIFY_CHARACTERISTIC_UUID);
       if (char_notify == nullptr) {
-        ESP_LOGE(TAG, "[%s] No notify service found at device, not an Ks BMS..?", this->parent_->address_str().c_str());
+        ESP_LOGE(TAG, "[%s] No notify service found at device, not an Ks BMS..?", this->parent_->address_str());
         break;
       }
       this->char_notify_handle_ = char_notify->handle;
@@ -101,8 +101,7 @@ void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gat
 
       auto *char_command = this->parent_->get_characteristic(KS_BMS_SERVICE_UUID, KS_BMS_CONTROL_CHARACTERISTIC_UUID);
       if (char_command == nullptr) {
-        ESP_LOGE(TAG, "[%s] No control service found at device, not an BASEN BMS..?",
-                 this->parent_->address_str().c_str());
+        ESP_LOGE(TAG, "[%s] No control service found at device, not an BASEN BMS..?", this->parent_->address_str());
         break;
       }
       this->char_command_handle_ = char_command->handle;
@@ -130,7 +129,7 @@ void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gat
 
 void KsBmsBle::update() {
   if (this->node_state != espbt::ClientState::ESTABLISHED) {
-    ESP_LOGW(TAG, "[%s] Not connected", this->parent_->address_str().c_str());
+    ESP_LOGW(TAG, "[%s] Not connected", this->parent_->address_str());
     return;
   }
 
@@ -662,7 +661,7 @@ bool KsBmsBle::send_command_(uint8_t function) {
                                sizeof(frame), frame, ESP_GATT_WRITE_TYPE_NO_RSP, ESP_GATT_AUTH_REQ_NONE);
 
   if (status) {
-    ESP_LOGW(TAG, "[%s] esp_ble_gattc_write_char failed, status=%d", this->parent_->address_str().c_str(), status);
+    ESP_LOGW(TAG, "[%s] esp_ble_gattc_write_char failed, status=%d", this->parent_->address_str(), status);
   }
 
   return (status == 0);
