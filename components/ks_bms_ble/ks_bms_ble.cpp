@@ -124,7 +124,7 @@ void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gat
     }
     case ESP_GATTC_NOTIFY_EVT: {
       ESP_LOGV(TAG, "Notification received (handle 0x%02X): %s", param->notify.handle,
-               format_hex_pretty(param->notify.value, param->notify.value_len).c_str());
+               format_hex_pretty(param->notify.value, param->notify.value_len).c_str());  // NOLINT
 
       std::vector<uint8_t> data(param->notify.value, param->notify.value + param->notify.value_len);
 
@@ -150,7 +150,7 @@ void KsBmsBle::update() {
 void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8_t> &data) {
   if (data[0] != KS_PKT_START || data.back() != KS_PKT_END || (data.size() > 3 && data.size() != data[2] + 4) ||
       data.size() > MAX_RESPONSE_SIZE) {
-    ESP_LOGW(TAG, "Invalid response received: %s", format_hex_pretty(&data.front(), data.size()).c_str());
+    ESP_LOGW(TAG, "Invalid response received: %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
     return;
   }
 
@@ -193,7 +193,7 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
 
     default:
       ESP_LOGW(TAG, "Unhandled response received (frame_type 0x%02X): %s", frame_type,
-               format_hex_pretty(&data.front(), data.size()).c_str());
+               format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
   }
 }
 
@@ -204,7 +204,7 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   };
 
   ESP_LOGI(TAG, "Status frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -308,7 +308,7 @@ void KsBmsBle::decode_cell_voltages_data_(const std::vector<uint8_t> &data) {
   auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
 
   ESP_LOGI(TAG, "Cell voltages frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -374,7 +374,7 @@ void KsBmsBle::decode_temperatures_data_(const std::vector<uint8_t> &data) {
   auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
 
   ESP_LOGI(TAG, "Temperatures frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -403,7 +403,7 @@ void KsBmsBle::decode_temperatures_data_(const std::vector<uint8_t> &data) {
 
 void KsBmsBle::decode_manufacturing_date_data_(const std::vector<uint8_t> &data) {
   ESP_LOGI(TAG, "Manufacturing date frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -423,7 +423,7 @@ void KsBmsBle::decode_manufacturing_date_data_(const std::vector<uint8_t> &data)
 
 void KsBmsBle::decode_model_name_data_(const std::vector<uint8_t> &data) {
   ESP_LOGI(TAG, "Model name frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -443,7 +443,7 @@ void KsBmsBle::decode_model_name_data_(const std::vector<uint8_t> &data) {
 
 void KsBmsBle::decode_serial_number_data_(const std::vector<uint8_t> &data) {
   ESP_LOGI(TAG, "Serial number frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -462,7 +462,7 @@ void KsBmsBle::decode_serial_number_data_(const std::vector<uint8_t> &data) {
 
 void KsBmsBle::decode_model_type_data_(const std::vector<uint8_t> &data) {
   ESP_LOGI(TAG, "Model type frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -481,7 +481,7 @@ void KsBmsBle::decode_model_type_data_(const std::vector<uint8_t> &data) {
 
 void KsBmsBle::decode_bluetooth_software_version_data_(const std::vector<uint8_t> &data) {
   ESP_LOGI(TAG, "Bluetooth software version frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -501,7 +501,7 @@ void KsBmsBle::decode_bluetooth_software_version_data_(const std::vector<uint8_t
 
 void KsBmsBle::decode_software_version_data_(const std::vector<uint8_t> &data) {
   ESP_LOGI(TAG, "Software version frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -516,7 +516,7 @@ void KsBmsBle::decode_software_version_data_(const std::vector<uint8_t> &data) {
 
 void KsBmsBle::decode_hardware_version_data_(const std::vector<uint8_t> &data) {
   ESP_LOGI(TAG, "Hardware version frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -532,7 +532,7 @@ void KsBmsBle::decode_hardware_version_data_(const std::vector<uint8_t> &data) {
 
 void KsBmsBle::decode_bootloader_version_data_(const std::vector<uint8_t> &data) {
   ESP_LOGI(TAG, "Bootloader version frame received");
-  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Byte Len Payload      Description                      Unit  Precision
   //  0    1  0x7B         Start of frame
@@ -663,7 +663,7 @@ bool KsBmsBle::send_command_(uint8_t function) {
   frame[3] = KS_PKT_END;
 
   ESP_LOGD(TAG, "Send command (handle 0x%02X): %s", this->char_command_handle_,
-           format_hex_pretty(frame, sizeof(frame)).c_str());
+           format_hex_pretty(frame, sizeof(frame)).c_str());  // NOLINT
 
   auto status =
       esp_ble_gattc_write_char(this->parent_->get_gattc_if(), this->parent_->get_conn_id(), this->char_command_handle_,
