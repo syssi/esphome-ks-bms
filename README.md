@@ -20,7 +20,7 @@ ESPHome component to monitor a KS48100 Battery Management System via BLE
 
 ## Requirements
 
-* [ESPHome 2024.6.0 or higher](https://github.com/esphome/esphome/releases).
+* [ESPHome 2024.12.0 or higher](https://github.com/esphome/esphome/releases).
 * Generic ESP32 board
 
 ## Installation
