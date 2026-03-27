@@ -183,8 +183,8 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   } temperatures_[8];
 
   std::vector<uint8_t> frame_buffer_;
-  uint16_t char_notify_handle_;
-  uint16_t char_command_handle_;
+  uint16_t char_notify_handle_{0};
+  uint16_t char_command_handle_{0};
 
   void decode_status_data_(const std::vector<uint8_t> &data);
   void decode_cell_voltages_data_(const std::vector<uint8_t> &data);
