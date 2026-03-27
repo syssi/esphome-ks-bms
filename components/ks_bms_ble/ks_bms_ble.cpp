@@ -550,7 +550,7 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
 
   LOG_BINARY_SENSOR("", "Charging", this->charging_binary_sensor_);
   LOG_BINARY_SENSOR("", "Discharging", this->discharging_binary_sensor_);
-  LOG_BINARY_SENSOR("", "Limiting current", this->limiting_current_binary_sensor_);
+  LOG_BINARY_SENSOR("", "Limiting Current", this->limiting_current_binary_sensor_);
 
   LOG_SENSOR("", "State of charge", this->state_of_charge_sensor_);
   LOG_SENSOR("", "Total voltage", this->total_voltage_sensor_);
@@ -615,10 +615,6 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Current protection bitmask", this->current_protection_bitmask_sensor_);
   LOG_SENSOR("", "Temperature protection bitmask", this->temperature_protection_bitmask_sensor_);
   LOG_SENSOR("", "Error bitmask", this->error_bitmask_sensor_);
-
-  LOG_BINARY_SENSOR("", "Charging", this->charging_binary_sensor_);
-  LOG_BINARY_SENSOR("", "Discharging", this->discharging_binary_sensor_);
-  LOG_BINARY_SENSOR("", "Limiting Current", this->limiting_current_binary_sensor_);
 
   LOG_TEXT_SENSOR("", "Software Version", this->software_version_text_sensor_);
   LOG_TEXT_SENSOR("", "Device Model", this->device_model_text_sensor_);
