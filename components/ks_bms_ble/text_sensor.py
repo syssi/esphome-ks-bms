@@ -1,6 +1,7 @@
 import esphome.codegen as cg
 from esphome.components import text_sensor
 import esphome.config_validation as cv
+from esphome.const import ENTITY_CATEGORY_DIAGNOSTIC
 
 from . import CONF_KS_BMS_BLE_ID, KS_BMS_BLE_COMPONENT_SCHEMA
 
@@ -37,25 +38,31 @@ TEXT_SENSORS = [
 CONFIG_SCHEMA = KS_BMS_BLE_COMPONENT_SCHEMA.extend(
     {
         cv.Optional(CONF_SOFTWARE_VERSION): text_sensor.text_sensor_schema(
-            text_sensor.TextSensor, icon=ICON_SOFTWARE_VERSION
+            icon=ICON_SOFTWARE_VERSION,
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
         cv.Optional(CONF_DEVICE_MODEL): text_sensor.text_sensor_schema(
-            text_sensor.TextSensor, icon=ICON_DEVICE_MODEL
+            icon=ICON_DEVICE_MODEL,
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
         cv.Optional(CONF_VOLTAGE_PROTECTION): text_sensor.text_sensor_schema(
-            text_sensor.TextSensor, icon=ICON_VOLTAGE_PROTECTION
+            icon=ICON_VOLTAGE_PROTECTION,
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
         cv.Optional(CONF_CURRENT_PROTECTION): text_sensor.text_sensor_schema(
-            text_sensor.TextSensor, icon=ICON_CURRENT_PROTECTION
+            icon=ICON_CURRENT_PROTECTION,
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
         cv.Optional(CONF_TEMPERATURE_PROTECTION): text_sensor.text_sensor_schema(
-            text_sensor.TextSensor, icon=ICON_TEMPERATURE_PROTECTION
+            icon=ICON_TEMPERATURE_PROTECTION,
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
         cv.Optional(CONF_ERRORS): text_sensor.text_sensor_schema(
-            text_sensor.TextSensor, icon=ICON_ERRORS
+            icon=ICON_ERRORS,
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
         cv.Optional(CONF_BALANCER_STATUS): text_sensor.text_sensor_schema(
-            text_sensor.TextSensor, icon=ICON_BALANCER_STATUS
+            icon=ICON_BALANCER_STATUS
         ),
     }
 )
