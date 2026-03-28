@@ -607,7 +607,6 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Temperature 6", this->temperatures_[5].temperature_sensor_);
   LOG_SENSOR("", "Temperature 7", this->temperatures_[6].temperature_sensor_);
   LOG_SENSOR("", "Temperature 8", this->temperatures_[7].temperature_sensor_);
-  LOG_SENSOR("", "State of health", this->state_of_health_sensor_);
   LOG_SENSOR("", "Balanced cell", this->balanced_cell_sensor_);
   LOG_SENSOR("", "Balanced cell bitmask", this->balanced_cell_bitmask_sensor_);
 
