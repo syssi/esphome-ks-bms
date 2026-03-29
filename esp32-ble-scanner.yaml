@@ -1,0 +1,67 @@
+substitutions:
+  name: ble-scanner
+  device_description: "Search for KS BMS BLE devices"
+
+esphome:
+  name: ${name}
+  friendly_name: ${name}
+  comment: ${device_description}
+  project:
+    name: "syssi.esphome-ks-bms"
+    version: 1.1.0
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    type: esp-idf
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+ota:
+  platform: esphome
+
+logger:
+  level: DEBUG
+  logs:
+    wifi: WARN
+
+api:
+  reboot_timeout: 0s
+
+esp32_ble_tracker:
+  scan_parameters:
+    active: true
+  on_ble_advertise:
+    then:
+      - lambda: |-
+          // KS BMS devices are identified by manufacturer specific data:
+          //   Company ID 0x007B + payload 02 FF FF 7D → device_type: 1 (status cmd 0x01)
+          //   Company ID 0x007B + payload 02 FE FF 7D → device_type: 2 (status cmd 0x61)
+          //   Company ID 0x5C61 + payload 43 38 36 C4 → device_type: 0 (unsupported)
+          //   Company ID 0xA702 + payload DC 38 .. A4 → device_type: 0 (unsupported)
+          for (auto &mdata : x.get_manufacturer_datas()) {
+            if (mdata.uuid == esphome::esp32_ble::ESPBTUUID::from_uint16(0x007b) && mdata.data.size() == 4 &&
+                mdata.data[0] == 0x02 && mdata.data[2] == 0xff && mdata.data[3] == 0x7d) {
+              uint8_t device_type = (mdata.data[1] == 0xfe) ? 2 : 1;
+              ESP_LOGI("ble_adv", "KS-BMS found");
+              ESP_LOGI("ble_adv", "  Name: %s", x.get_name().c_str());
+              ESP_LOGI("ble_adv", "  MAC address: %s", x.address_str().c_str());
+              ESP_LOGI("ble_adv", "  Device type: %d", device_type);
+              ESP_LOGI("ble_adv", "  Use 'device_type: %d' in your YAML configuration", device_type);
+            } else if ((mdata.uuid == esphome::esp32_ble::ESPBTUUID::from_uint16(0x5c61) &&
+                        mdata.data.size() == 4 && mdata.data[0] == 0x43 && mdata.data[1] == 0x38 &&
+                        mdata.data[2] == 0x36 && mdata.data[3] == 0xc4) ||
+                       (mdata.uuid == esphome::esp32_ble::ESPBTUUID::from_uint16(0xa702) &&
+                        mdata.data.size() >= 3 && mdata.data[0] == 0xdc && mdata.data[1] == 0x38 &&
+                        mdata.data.back() == 0xa4)) {
+              ESP_LOGI("ble_adv", "KS-BMS found (unsupported device type 0)");
+              ESP_LOGI("ble_adv", "  Name: %s", x.get_name().c_str());
+              ESP_LOGI("ble_adv", "  MAC address: %s", x.address_str().c_str());
+            }
+          }
+
+text_sensor:
+  - platform: ble_scanner
+    name: "BLE Devices Scanner"

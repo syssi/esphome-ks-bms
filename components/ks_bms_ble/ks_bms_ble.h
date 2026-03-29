@@ -133,8 +133,10 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
 
   void write_register(uint8_t address, uint16_t value);
   void on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8_t> &data);
+  void set_device_type(uint8_t device_type) { device_type_ = device_type; }
 
  protected:
+  uint8_t device_type_{1};
   binary_sensor::BinarySensor *charging_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *discharging_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *limiting_current_binary_sensor_{nullptr};
