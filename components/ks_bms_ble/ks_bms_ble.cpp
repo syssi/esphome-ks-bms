@@ -24,6 +24,7 @@ static const uint8_t KS_PKT_START = 0x7B;
 static const uint8_t KS_PKT_END = 0x7D;
 
 static const uint8_t KS_FRAME_TYPE_STATUS = 0x01;
+static const uint8_t KS_FRAME_TYPE_STATUS_V2 = 0x61;
 static const uint8_t KS_FRAME_TYPE_CELL_VOLTAGES = 0x02;
 static const uint8_t KS_FRAME_TYPE_TEMPERATURES = 0x03;
 static const uint8_t KS_FRAME_TYPE_HISTORY = 0x08;
@@ -37,18 +38,11 @@ static const uint8_t KS_FRAME_TYPE_SOFTWARE_VERSION = 0xF3;  // No response
 static const uint8_t KS_FRAME_TYPE_HARDWARE_VERSION = 0xF4;
 static const uint8_t KS_FRAME_TYPE_BOOTLOADER_VERSION = 0xF5;
 
-static const uint8_t KS_COMMAND_QUEUE_SIZE = 12;
+static const uint8_t KS_COMMAND_QUEUE_SIZE = 9;
 static const uint8_t KS_COMMAND_QUEUE[KS_COMMAND_QUEUE_SIZE] = {
-    KS_FRAME_TYPE_STATUS,
-    KS_FRAME_TYPE_CELL_VOLTAGES,
-    KS_FRAME_TYPE_TEMPERATURES,
-    KS_FRAME_TYPE_HISTORY,
-    KS_FRAME_TYPE_MANUFACTURING_DATE,
-    KS_FRAME_TYPE_MODEL_NAME,
-    KS_FRAME_TYPE_SERIAL_NUMBER,
-    KS_FRAME_TYPE_MODEL_TYPE,
-    KS_FRAME_TYPE_HARDWARE_VERSION,
-    KS_FRAME_TYPE_BOOTLOADER_VERSION,
+    KS_FRAME_TYPE_CELL_VOLTAGES,      KS_FRAME_TYPE_TEMPERATURES,     KS_FRAME_TYPE_HISTORY,
+    KS_FRAME_TYPE_MANUFACTURING_DATE, KS_FRAME_TYPE_MODEL_NAME,       KS_FRAME_TYPE_SERIAL_NUMBER,
+    KS_FRAME_TYPE_MODEL_TYPE,         KS_FRAME_TYPE_HARDWARE_VERSION, KS_FRAME_TYPE_BOOTLOADER_VERSION,
 };
 
 static const uint8_t ERRORS_SIZE = 16;
@@ -119,7 +113,7 @@ void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gat
     case ESP_GATTC_REG_FOR_NOTIFY_EVT: {
       this->node_state = espbt::ClientState::ESTABLISHED;
 
-      this->send_command_(0x01);
+      this->send_command_(this->device_type_ == 2 ? KS_FRAME_TYPE_STATUS_V2 : KS_FRAME_TYPE_STATUS);
       break;
     }
     case ESP_GATTC_NOTIFY_EVT: {
@@ -142,6 +136,7 @@ void KsBmsBle::update() {
     return;
   }
 
+  this->send_command_(this->device_type_ == 2 ? KS_FRAME_TYPE_STATUS_V2 : KS_FRAME_TYPE_STATUS);
   for (uint8_t command : KS_COMMAND_QUEUE) {
     this->send_command_(command);
   }
@@ -189,6 +184,10 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
       break;
     case KS_FRAME_TYPE_BOOTLOADER_VERSION:
       this->decode_bootloader_version_data_(data);
+      break;
+    case KS_FRAME_TYPE_HISTORY:
+      ESP_LOGD(TAG, "History frame received (ignored): %s",
+               format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
       break;
 
     default:
@@ -547,6 +546,8 @@ void KsBmsBle::decode_bootloader_version_data_(const std::vector<uint8_t> &data)
 
 void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,readability-function-size)
   ESP_LOGCONFIG(TAG, "KsBmsBle:");
+  ESP_LOGCONFIG(TAG, "  Device type: %d (%s)", this->device_type_,
+                this->device_type_ == 2 ? "status cmd 0x61" : "status cmd 0x01");
 
   LOG_BINARY_SENSOR("", "Charging", this->charging_binary_sensor_);
   LOG_BINARY_SENSOR("", "Discharging", this->discharging_binary_sensor_);

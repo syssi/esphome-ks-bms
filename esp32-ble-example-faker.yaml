@@ -3,6 +3,7 @@
 ks_bms_ble:
   - ble_client_id: client0
     id: bms0
+    device_type: 1
     update_interval: 30s
 
 interval:
