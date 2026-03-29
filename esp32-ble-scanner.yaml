@@ -40,7 +40,7 @@ esp32_ble_tracker:
           //   Company ID 0x007B + payload 02 FF FF 7D → device_type: 1 (status cmd 0x01)
           //   Company ID 0x007B + payload 02 FE FF 7D → device_type: 2 (status cmd 0x61)
           for (auto &mdata : x.get_manufacturer_datas()) {
-            if (mdata.uuid == espbt::ESPBTUUID::from_uint16(0x007b) && mdata.data.size() == 4 &&
+            if (mdata.uuid == esphome::esp32_ble::ESPBTUUID::from_uint16(0x007b) && mdata.data.size() == 4 &&
                 mdata.data[0] == 0x02 && mdata.data[2] == 0xff && mdata.data[3] == 0x7d) {
               uint8_t device_type = (mdata.data[1] == 0xfe) ? 2 : 1;
               ESP_LOGI("ble_adv", "KS-BMS found");
