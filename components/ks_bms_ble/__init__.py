@@ -5,7 +5,7 @@ from esphome.const import CONF_ID
 
 CODEOWNERS = ["@syssi"]
 DEPENDENCIES = ["ble_client"]
-AUTO_LOAD = ["binary_sensor", "sensor", "text_sensor"]
+AUTO_LOAD = ["binary_sensor", "sensor", "switch", "text_sensor"]
 MULTI_CONF = True
 
 CONF_KS_BMS_BLE_ID = "ks_bms_ble_id"

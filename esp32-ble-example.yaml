@@ -170,6 +170,12 @@ switch:
     ble_client_id: client0
     name: "enable bluetooth connection"
     id: ble_client_switch0
+  - platform: ks_bms_ble
+    ks_bms_ble_id: bms0
+    charging:
+      name: "charging"
+    discharging:
+      name: "discharging"
 
 text_sensor:
   - platform: ks_bms_ble
