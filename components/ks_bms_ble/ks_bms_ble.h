@@ -5,6 +5,7 @@
 #include "esphome/components/esp32_ble_tracker/esp32_ble_tracker.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/switch/switch.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 
 #ifdef USE_ESP32
@@ -33,6 +34,9 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   void set_limiting_current_binary_sensor(binary_sensor::BinarySensor *limiting_current_binary_sensor) {
     limiting_current_binary_sensor_ = limiting_current_binary_sensor;
   }
+
+  void set_charging_switch(switch_::Switch *charging_switch) { charging_switch_ = charging_switch; }
+  void set_discharging_switch(switch_::Switch *discharging_switch) { discharging_switch_ = discharging_switch; }
 
   void set_total_voltage_sensor(sensor::Sensor *total_voltage_sensor) { total_voltage_sensor_ = total_voltage_sensor; }
   void set_current_sensor(sensor::Sensor *current_sensor) { current_sensor_ = current_sensor; }
@@ -131,7 +135,7 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
     balancer_status_text_sensor_ = balancer_status_text_sensor;
   }
 
-  void write_register(uint8_t address, uint16_t value);
+  bool write_register(uint8_t address, uint16_t value);
   void on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8_t> &data);
   void set_device_type(uint8_t device_type) { device_type_ = device_type; }
 
@@ -140,6 +144,9 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   binary_sensor::BinarySensor *charging_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *discharging_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *limiting_current_binary_sensor_{nullptr};
+
+  switch_::Switch *charging_switch_{nullptr};
+  switch_::Switch *discharging_switch_{nullptr};
 
   sensor::Sensor *total_voltage_sensor_{nullptr};
   sensor::Sensor *current_sensor_{nullptr};
@@ -201,6 +208,7 @@ class KsBmsBle : public esphome::ble_client::BLEClientNode, public PollingCompon
   void decode_bootloader_version_data_(const std::vector<uint8_t> &data);
   void publish_state_(binary_sensor::BinarySensor *binary_sensor, const bool &state);
   void publish_state_(sensor::Sensor *sensor, float value);
+  void publish_state_(switch_::Switch *obj, const bool &state);
   void publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state);
   bool send_command_(uint8_t function);
   std::string bitmask_to_string_(const char *const messages[], const uint8_t &messages_size, const uint16_t &mask);

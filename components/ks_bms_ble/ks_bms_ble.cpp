@@ -269,8 +269,10 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   //                         Bit 2: Charging
   //                         Bit 3: Discharging
   uint16_t fet_control_status = ks_get_16bit(29);
-  this->publish_state_(this->charging_binary_sensor_, (bool) check_bit_(fet_control_status, 8));
-  this->publish_state_(this->discharging_binary_sensor_, (bool) check_bit_(fet_control_status, 4));
+  this->publish_state_(this->charging_binary_sensor_, check_bit_(fet_control_status, 8));
+  this->publish_state_(this->discharging_binary_sensor_, check_bit_(fet_control_status, 4));
+  this->publish_state_(this->charging_switch_, check_bit_(fet_control_status, 8));
+  this->publish_state_(this->discharging_switch_, check_bit_(fet_control_status, 4));
   this->publish_state_(this->balancer_status_text_sensor_,
                        this->fet_control_status_to_balancer_status_text_(fet_control_status));
 
@@ -639,6 +641,13 @@ void KsBmsBle::publish_state_(sensor::Sensor *sensor, float value) {
   sensor->publish_state(value);
 }
 
+void KsBmsBle::publish_state_(switch_::Switch *obj, const bool &state) {
+  if (obj == nullptr)
+    return;
+
+  obj->publish_state(state);
+}
+
 void KsBmsBle::publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state) {
   if (text_sensor == nullptr)
     return;
@@ -646,8 +655,20 @@ void KsBmsBle::publish_state_(text_sensor::TextSensor *text_sensor, const std::s
   text_sensor->publish_state(state);
 }
 
-void KsBmsBle::write_register(uint8_t address, uint16_t value) {
-  // this->send_command_(KS_CMD_WRITE, KS_CMD_MOS);  // @TODO: Pass value
+bool KsBmsBle::write_register(uint8_t address, uint16_t value) {
+  uint8_t frame[6] = {KS_PKT_START, address, 0x02, (uint8_t) (value >> 8), (uint8_t) (value & 0xFF), KS_PKT_END};
+
+  ESP_LOGD(TAG, "Write register (handle 0x%02X): %s", this->char_command_handle_,
+           format_hex_pretty(frame, sizeof(frame)).c_str());
+
+  auto status =
+      esp_ble_gattc_write_char(this->parent_->get_gattc_if(), this->parent_->get_conn_id(), this->char_command_handle_,
+                               sizeof(frame), frame, ESP_GATT_WRITE_TYPE_NO_RSP, ESP_GATT_AUTH_REQ_NONE);
+
+  if (status) {
+    ESP_LOGW(TAG, "[%s] esp_ble_gattc_write_char failed, status=%d", ADDR_STR(this->parent_->address_str()), status);
+  }
+  return status == 0;
 }
 
 bool KsBmsBle::send_command_(uint8_t function) {
