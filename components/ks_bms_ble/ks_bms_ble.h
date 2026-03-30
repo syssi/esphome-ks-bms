@@ -3,6 +3,7 @@
 #include "esphome/core/component.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/number/number.h"
 #include "esphome/components/switch/switch.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 
@@ -45,6 +46,135 @@ class KsBmsBle :
 
   void set_charging_switch(switch_::Switch *charging_switch) { charging_switch_ = charging_switch; }
   void set_discharging_switch(switch_::Switch *discharging_switch) { discharging_switch_ = discharging_switch; }
+
+  void set_cell_full_voltage_number(number::Number *cell_full_voltage_number) {
+    cell_full_voltage_number_ = cell_full_voltage_number;
+  }
+  void set_cell_cutoff_voltage_number(number::Number *cell_cutoff_voltage_number) {
+    cell_cutoff_voltage_number_ = cell_cutoff_voltage_number;
+  }
+  void set_balance_open_voltage_number(number::Number *balance_open_voltage_number) {
+    balance_open_voltage_number_ = balance_open_voltage_number;
+  }
+  void set_balance_open_voltage_diff_number(number::Number *balance_open_voltage_diff_number) {
+    balance_open_voltage_diff_number_ = balance_open_voltage_diff_number;
+  }
+  void set_soc_80_voltage_number(number::Number *soc_80_voltage_number) {
+    soc_80_voltage_number_ = soc_80_voltage_number;
+  }
+  void set_soc_60_voltage_number(number::Number *soc_60_voltage_number) {
+    soc_60_voltage_number_ = soc_60_voltage_number;
+  }
+  void set_soc_40_voltage_number(number::Number *soc_40_voltage_number) {
+    soc_40_voltage_number_ = soc_40_voltage_number;
+  }
+  void set_soc_20_voltage_number(number::Number *soc_20_voltage_number) {
+    soc_20_voltage_number_ = soc_20_voltage_number;
+  }
+  void set_nominal_capacity_number(number::Number *nominal_capacity_number) {
+    nominal_capacity_number_ = nominal_capacity_number;
+  }
+  void set_cycle_capacity_number(number::Number *cycle_capacity_number) {
+    cycle_capacity_number_ = cycle_capacity_number;
+  }
+  void set_full_charge_capacity_number(number::Number *full_charge_capacity_number) {
+    full_charge_capacity_number_ = full_charge_capacity_number;
+  }
+  void set_cell_overvoltage_protection_number(number::Number *cell_overvoltage_protection_number) {
+    cell_overvoltage_protection_number_ = cell_overvoltage_protection_number;
+  }
+  void set_cell_overvoltage_recovery_number(number::Number *cell_overvoltage_recovery_number) {
+    cell_overvoltage_recovery_number_ = cell_overvoltage_recovery_number;
+  }
+  void set_cell_overvoltage_protection_delay_number(number::Number *cell_overvoltage_protection_delay_number) {
+    cell_overvoltage_protection_delay_number_ = cell_overvoltage_protection_delay_number;
+  }
+  void set_cell_undervoltage_protection_number(number::Number *cell_undervoltage_protection_number) {
+    cell_undervoltage_protection_number_ = cell_undervoltage_protection_number;
+  }
+  void set_cell_undervoltage_recovery_number(number::Number *cell_undervoltage_recovery_number) {
+    cell_undervoltage_recovery_number_ = cell_undervoltage_recovery_number;
+  }
+  void set_cell_undervoltage_protection_delay_number(number::Number *cell_undervoltage_protection_delay_number) {
+    cell_undervoltage_protection_delay_number_ = cell_undervoltage_protection_delay_number;
+  }
+  void set_pack_overvoltage_protection_number(number::Number *pack_overvoltage_protection_number) {
+    pack_overvoltage_protection_number_ = pack_overvoltage_protection_number;
+  }
+  void set_pack_overvoltage_recovery_number(number::Number *pack_overvoltage_recovery_number) {
+    pack_overvoltage_recovery_number_ = pack_overvoltage_recovery_number;
+  }
+  void set_pack_overvoltage_protection_delay_number(number::Number *pack_overvoltage_protection_delay_number) {
+    pack_overvoltage_protection_delay_number_ = pack_overvoltage_protection_delay_number;
+  }
+  void set_pack_undervoltage_protection_number(number::Number *pack_undervoltage_protection_number) {
+    pack_undervoltage_protection_number_ = pack_undervoltage_protection_number;
+  }
+  void set_pack_undervoltage_recovery_number(number::Number *pack_undervoltage_recovery_number) {
+    pack_undervoltage_recovery_number_ = pack_undervoltage_recovery_number;
+  }
+  void set_pack_undervoltage_protection_delay_number(number::Number *pack_undervoltage_protection_delay_number) {
+    pack_undervoltage_protection_delay_number_ = pack_undervoltage_protection_delay_number;
+  }
+  void set_charge_overtemperature_protection_number(number::Number *charge_overtemperature_protection_number) {
+    charge_overtemperature_protection_number_ = charge_overtemperature_protection_number;
+  }
+  void set_charge_overtemperature_recovery_number(number::Number *charge_overtemperature_recovery_number) {
+    charge_overtemperature_recovery_number_ = charge_overtemperature_recovery_number;
+  }
+  void set_charge_overtemperature_protection_delay_number(
+      number::Number *charge_overtemperature_protection_delay_number) {
+    charge_overtemperature_protection_delay_number_ = charge_overtemperature_protection_delay_number;
+  }
+  void set_charge_undertemperature_protection_delay_number(
+      number::Number *charge_undertemperature_protection_delay_number) {
+    charge_undertemperature_protection_delay_number_ = charge_undertemperature_protection_delay_number;
+  }
+  void set_charge_undertemperature_recovery_number(number::Number *charge_undertemperature_recovery_number) {
+    charge_undertemperature_recovery_number_ = charge_undertemperature_recovery_number;
+  }
+  void set_charge_undertemperature_protection_number(number::Number *charge_undertemperature_protection_number) {
+    charge_undertemperature_protection_number_ = charge_undertemperature_protection_number;
+  }
+  void set_discharge_overtemperature_protection_number(number::Number *discharge_overtemperature_protection_number) {
+    discharge_overtemperature_protection_number_ = discharge_overtemperature_protection_number;
+  }
+  void set_discharge_overtemperature_recovery_number(number::Number *discharge_overtemperature_recovery_number) {
+    discharge_overtemperature_recovery_number_ = discharge_overtemperature_recovery_number;
+  }
+  void set_discharge_overtemperature_protection_delay_number(
+      number::Number *discharge_overtemperature_protection_delay_number) {
+    discharge_overtemperature_protection_delay_number_ = discharge_overtemperature_protection_delay_number;
+  }
+  void set_discharge_undertemperature_protection_number(number::Number *discharge_undertemperature_protection_number) {
+    discharge_undertemperature_protection_number_ = discharge_undertemperature_protection_number;
+  }
+  void set_discharge_undertemperature_recovery_number(number::Number *discharge_undertemperature_recovery_number) {
+    discharge_undertemperature_recovery_number_ = discharge_undertemperature_recovery_number;
+  }
+  void set_discharge_undertemperature_protection_delay_number(
+      number::Number *discharge_undertemperature_protection_delay_number) {
+    discharge_undertemperature_protection_delay_number_ = discharge_undertemperature_protection_delay_number;
+  }
+  void set_charge_overcurrent_protection_number(number::Number *charge_overcurrent_protection_number) {
+    charge_overcurrent_protection_number_ = charge_overcurrent_protection_number;
+  }
+  void set_charge_overcurrent_protection_delay_number(number::Number *charge_overcurrent_protection_delay_number) {
+    charge_overcurrent_protection_delay_number_ = charge_overcurrent_protection_delay_number;
+  }
+  void set_charge_overcurrent_recovery_delay_number(number::Number *charge_overcurrent_recovery_delay_number) {
+    charge_overcurrent_recovery_delay_number_ = charge_overcurrent_recovery_delay_number;
+  }
+  void set_discharge_overcurrent_protection_number(number::Number *discharge_overcurrent_protection_number) {
+    discharge_overcurrent_protection_number_ = discharge_overcurrent_protection_number;
+  }
+  void set_discharge_overcurrent_protection_delay_number(
+      number::Number *discharge_overcurrent_protection_delay_number) {
+    discharge_overcurrent_protection_delay_number_ = discharge_overcurrent_protection_delay_number;
+  }
+  void set_discharge_overcurrent_recovery_delay_number(number::Number *discharge_overcurrent_recovery_delay_number) {
+    discharge_overcurrent_recovery_delay_number_ = discharge_overcurrent_recovery_delay_number;
+  }
 
   void set_total_voltage_sensor(sensor::Sensor *total_voltage_sensor) { total_voltage_sensor_ = total_voltage_sensor; }
   void set_current_sensor(sensor::Sensor *current_sensor) { current_sensor_ = current_sensor; }
@@ -126,6 +256,18 @@ class KsBmsBle :
   void set_software_version_text_sensor(text_sensor::TextSensor *software_version_text_sensor) {
     software_version_text_sensor_ = software_version_text_sensor;
   }
+  void set_hardware_version_text_sensor(text_sensor::TextSensor *hardware_version_text_sensor) {
+    hardware_version_text_sensor_ = hardware_version_text_sensor;
+  }
+  void set_bootloader_version_text_sensor(text_sensor::TextSensor *bootloader_version_text_sensor) {
+    bootloader_version_text_sensor_ = bootloader_version_text_sensor;
+  }
+  void set_serial_number_text_sensor(text_sensor::TextSensor *t) { serial_number_text_sensor_ = t; }
+  void set_manufacturing_date_text_sensor(text_sensor::TextSensor *t) { manufacturing_date_text_sensor_ = t; }
+  void set_model_type_text_sensor(text_sensor::TextSensor *t) { model_type_text_sensor_ = t; }
+  void set_bluetooth_software_version_text_sensor(text_sensor::TextSensor *t) {
+    bluetooth_software_version_text_sensor_ = t;
+  }
   void set_device_model_text_sensor(text_sensor::TextSensor *device_model_text_sensor) {
     device_model_text_sensor_ = device_model_text_sensor;
   }
@@ -156,6 +298,48 @@ class KsBmsBle :
   switch_::Switch *charging_switch_{nullptr};
   switch_::Switch *discharging_switch_{nullptr};
 
+  number::Number *cell_full_voltage_number_{nullptr};
+  number::Number *cell_cutoff_voltage_number_{nullptr};
+  number::Number *balance_open_voltage_number_{nullptr};
+  number::Number *balance_open_voltage_diff_number_{nullptr};
+  number::Number *soc_80_voltage_number_{nullptr};
+  number::Number *soc_60_voltage_number_{nullptr};
+  number::Number *soc_40_voltage_number_{nullptr};
+  number::Number *soc_20_voltage_number_{nullptr};
+  number::Number *nominal_capacity_number_{nullptr};
+  number::Number *cycle_capacity_number_{nullptr};
+  number::Number *full_charge_capacity_number_{nullptr};
+  number::Number *cell_overvoltage_protection_number_{nullptr};
+  number::Number *cell_overvoltage_recovery_number_{nullptr};
+  number::Number *cell_overvoltage_protection_delay_number_{nullptr};
+  number::Number *cell_undervoltage_protection_number_{nullptr};
+  number::Number *cell_undervoltage_recovery_number_{nullptr};
+  number::Number *cell_undervoltage_protection_delay_number_{nullptr};
+  number::Number *pack_overvoltage_protection_number_{nullptr};
+  number::Number *pack_overvoltage_recovery_number_{nullptr};
+  number::Number *pack_overvoltage_protection_delay_number_{nullptr};
+  number::Number *pack_undervoltage_protection_number_{nullptr};
+  number::Number *pack_undervoltage_recovery_number_{nullptr};
+  number::Number *pack_undervoltage_protection_delay_number_{nullptr};
+  number::Number *charge_overtemperature_protection_number_{nullptr};
+  number::Number *charge_overtemperature_recovery_number_{nullptr};
+  number::Number *charge_overtemperature_protection_delay_number_{nullptr};
+  number::Number *charge_undertemperature_protection_delay_number_{nullptr};
+  number::Number *charge_undertemperature_recovery_number_{nullptr};
+  number::Number *charge_undertemperature_protection_number_{nullptr};
+  number::Number *discharge_overtemperature_protection_number_{nullptr};
+  number::Number *discharge_overtemperature_recovery_number_{nullptr};
+  number::Number *discharge_overtemperature_protection_delay_number_{nullptr};
+  number::Number *discharge_undertemperature_protection_number_{nullptr};
+  number::Number *discharge_undertemperature_recovery_number_{nullptr};
+  number::Number *discharge_undertemperature_protection_delay_number_{nullptr};
+  number::Number *charge_overcurrent_protection_number_{nullptr};
+  number::Number *charge_overcurrent_protection_delay_number_{nullptr};
+  number::Number *charge_overcurrent_recovery_delay_number_{nullptr};
+  number::Number *discharge_overcurrent_protection_number_{nullptr};
+  number::Number *discharge_overcurrent_protection_delay_number_{nullptr};
+  number::Number *discharge_overcurrent_recovery_delay_number_{nullptr};
+
   sensor::Sensor *total_voltage_sensor_{nullptr};
   sensor::Sensor *current_sensor_{nullptr};
   sensor::Sensor *power_sensor_{nullptr};
@@ -184,6 +368,12 @@ class KsBmsBle :
   sensor::Sensor *balanced_cell_bitmask_sensor_{nullptr};
 
   text_sensor::TextSensor *software_version_text_sensor_{nullptr};
+  text_sensor::TextSensor *hardware_version_text_sensor_{nullptr};
+  text_sensor::TextSensor *bootloader_version_text_sensor_{nullptr};
+  text_sensor::TextSensor *serial_number_text_sensor_{nullptr};
+  text_sensor::TextSensor *manufacturing_date_text_sensor_{nullptr};
+  text_sensor::TextSensor *model_type_text_sensor_{nullptr};
+  text_sensor::TextSensor *bluetooth_software_version_text_sensor_{nullptr};
   text_sensor::TextSensor *device_model_text_sensor_{nullptr};
   text_sensor::TextSensor *voltage_protection_text_sensor_{nullptr};
   text_sensor::TextSensor *current_protection_text_sensor_{nullptr};
@@ -204,6 +394,10 @@ class KsBmsBle :
   uint16_t char_command_handle_{0};
 
   void decode_status_data_(const std::vector<uint8_t> &data);
+  void decode_basic_config_data_(const std::vector<uint8_t> &data);
+  void decode_voltage_protection_data_(const std::vector<uint8_t> &data);
+  void decode_temperature_protection_data_(const std::vector<uint8_t> &data);
+  void decode_current_protection_data_(const std::vector<uint8_t> &data);
   void decode_cell_voltages_data_(const std::vector<uint8_t> &data);
   void decode_temperatures_data_(const std::vector<uint8_t> &data);
   void decode_manufacturing_date_data_(const std::vector<uint8_t> &data);
@@ -215,6 +409,7 @@ class KsBmsBle :
   void decode_hardware_version_data_(const std::vector<uint8_t> &data);
   void decode_bootloader_version_data_(const std::vector<uint8_t> &data);
   void publish_state_(binary_sensor::BinarySensor *binary_sensor, const bool &state);
+  void publish_state_(number::Number *obj, float value);
   void publish_state_(sensor::Sensor *sensor, float value);
   void publish_state_(switch_::Switch *obj, const bool &state);
   void publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state);
