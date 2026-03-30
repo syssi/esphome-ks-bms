@@ -659,7 +659,7 @@ bool KsBmsBle::write_register(uint8_t address, uint16_t value) {
   uint8_t frame[6] = {KS_PKT_START, address, 0x02, (uint8_t) (value >> 8), (uint8_t) (value & 0xFF), KS_PKT_END};
 
   ESP_LOGD(TAG, "Write register (handle 0x%02X): %s", this->char_command_handle_,
-           format_hex_pretty(frame, sizeof(frame)).c_str());
+           format_hex_pretty(frame, sizeof(frame)).c_str());  // NOLINT
 
   auto status =
       esp_ble_gattc_write_char(this->parent_->get_gattc_if(), this->parent_->get_conn_id(), this->char_command_handle_,
