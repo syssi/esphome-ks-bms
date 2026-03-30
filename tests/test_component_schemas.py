@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import components.ks_bms_ble as hub  # noqa: E402
 from components.ks_bms_ble import (  # noqa: E402
     binary_sensor,
+    number,
     sensor,
     switch,  # noqa: E402
     text_sensor,
@@ -80,3 +81,46 @@ class TestSwitchConstants:
     def test_switch_addresses_are_unique(self):
         addresses = list(switch.SWITCHES.values())
         assert len(addresses) == len(set(addresses))
+
+
+class TestNumberConstants:
+    def test_numbers_dict_populated(self):
+        assert len(number.NUMBERS) > 0
+
+    def test_numbers_addresses_are_unique(self):
+        addresses = [v[0] for v in number.NUMBERS.values()]
+        assert len(addresses) == len(set(addresses))
+
+    def test_cell_voltage_numbers_present(self):
+        assert "cell_full_voltage" in number.NUMBERS
+        assert "cell_cutoff_voltage" in number.NUMBERS
+
+    def test_voltage_protection_numbers_present(self):
+        assert "cell_overvoltage_protection" in number.NUMBERS
+        assert "cell_overvoltage_recovery" in number.NUMBERS
+        assert "cell_overvoltage_protection_delay" in number.NUMBERS
+        assert "cell_undervoltage_protection" in number.NUMBERS
+        assert "cell_undervoltage_recovery" in number.NUMBERS
+        assert "cell_undervoltage_protection_delay" in number.NUMBERS
+
+    def test_temperature_protection_numbers_present(self):
+        assert "charge_overtemperature_protection" in number.NUMBERS
+        assert "charge_overtemperature_recovery" in number.NUMBERS
+        assert "charge_overtemperature_protection_delay" in number.NUMBERS
+        assert "charge_undertemperature_protection" in number.NUMBERS
+        assert "charge_undertemperature_recovery" in number.NUMBERS
+        assert "charge_undertemperature_protection_delay" in number.NUMBERS
+        assert "discharge_overtemperature_protection" in number.NUMBERS
+        assert "discharge_overtemperature_recovery" in number.NUMBERS
+        assert "discharge_overtemperature_protection_delay" in number.NUMBERS
+        assert "discharge_undertemperature_protection" in number.NUMBERS
+        assert "discharge_undertemperature_recovery" in number.NUMBERS
+        assert "discharge_undertemperature_protection_delay" in number.NUMBERS
+
+    def test_current_protection_numbers_present(self):
+        assert "charge_overcurrent_protection" in number.NUMBERS
+        assert "charge_overcurrent_protection_delay" in number.NUMBERS
+        assert "charge_overcurrent_recovery_delay" in number.NUMBERS
+        assert "discharge_overcurrent_protection" in number.NUMBERS
+        assert "discharge_overcurrent_protection_delay" in number.NUMBERS
+        assert "discharge_overcurrent_recovery_delay" in number.NUMBERS

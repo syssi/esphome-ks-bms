@@ -32,17 +32,29 @@ static const uint8_t KS_FRAME_TYPE_MANUFACTURING_DATE = 0x09;
 static const uint8_t KS_FRAME_TYPE_MODEL_NAME = 0x0A;
 static const uint8_t KS_FRAME_TYPE_SERIAL_NUMBER = 0x0B;
 static const uint8_t KS_FRAME_TYPE_MODEL_TYPE = 0x0C;
+static const uint8_t KS_FRAME_TYPE_VOLTAGE_PROTECTION = 0x05;
+static const uint8_t KS_FRAME_TYPE_TEMPERATURE_PROTECTION = 0x06;
+static const uint8_t KS_FRAME_TYPE_CURRENT_PROTECTION = 0x07;
 static const uint8_t KS_FRAME_TYPE_STATUS_BITMASK = 0x64;  // No response
 static const uint8_t KS_FRAME_TYPE_BLUETOOTH_SOFTWARE_VERSION = 0x74;
 static const uint8_t KS_FRAME_TYPE_SOFTWARE_VERSION = 0xF3;  // No response
 static const uint8_t KS_FRAME_TYPE_HARDWARE_VERSION = 0xF4;
 static const uint8_t KS_FRAME_TYPE_BOOTLOADER_VERSION = 0xF5;
 
-static const uint8_t KS_COMMAND_QUEUE_SIZE = 9;
+static const uint8_t KS_COMMAND_QUEUE_SIZE = 12;
 static const uint8_t KS_COMMAND_QUEUE[KS_COMMAND_QUEUE_SIZE] = {
-    KS_FRAME_TYPE_CELL_VOLTAGES,      KS_FRAME_TYPE_TEMPERATURES,     KS_FRAME_TYPE_HISTORY,
-    KS_FRAME_TYPE_MANUFACTURING_DATE, KS_FRAME_TYPE_MODEL_NAME,       KS_FRAME_TYPE_SERIAL_NUMBER,
-    KS_FRAME_TYPE_MODEL_TYPE,         KS_FRAME_TYPE_HARDWARE_VERSION, KS_FRAME_TYPE_BOOTLOADER_VERSION,
+    KS_FRAME_TYPE_CELL_VOLTAGES,
+    KS_FRAME_TYPE_TEMPERATURES,
+    KS_FRAME_TYPE_HISTORY,
+    KS_FRAME_TYPE_MANUFACTURING_DATE,
+    KS_FRAME_TYPE_MODEL_NAME,
+    KS_FRAME_TYPE_SERIAL_NUMBER,
+    KS_FRAME_TYPE_MODEL_TYPE,
+    KS_FRAME_TYPE_HARDWARE_VERSION,
+    KS_FRAME_TYPE_BOOTLOADER_VERSION,
+    KS_FRAME_TYPE_VOLTAGE_PROTECTION,
+    KS_FRAME_TYPE_TEMPERATURE_PROTECTION,
+    KS_FRAME_TYPE_CURRENT_PROTECTION,
 };
 
 static const uint8_t ERRORS_SIZE = 16;
@@ -234,6 +246,15 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     case KS_FRAME_TYPE_BOOTLOADER_VERSION:
       this->decode_bootloader_version_data_(data);
       break;
+    case KS_FRAME_TYPE_VOLTAGE_PROTECTION:
+      this->decode_voltage_protection_data_(data);
+      break;
+    case KS_FRAME_TYPE_TEMPERATURE_PROTECTION:
+      this->decode_temperature_protection_data_(data);
+      break;
+    case KS_FRAME_TYPE_CURRENT_PROTECTION:
+      this->decode_current_protection_data_(data);
+      break;
     case KS_FRAME_TYPE_HISTORY:
       ESP_LOGD(TAG, "History frame received (ignored): %s",
                format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
@@ -352,6 +373,94 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   }
 
   // 34    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_voltage_protection_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Voltage protection frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+
+  // Byte Len  Description                              (app: dtgybh / dtqybh / zzgybh / zzqybh)
+  //  3    2   Cell overvoltage protection      (÷1000 V)
+  this->publish_state_(this->cell_overvoltage_protection_number_, ks_get_16bit(3) / 1000.0f);
+  //  5    2   Cell overvoltage recovery        (÷1000 V)
+  this->publish_state_(this->cell_overvoltage_recovery_number_, ks_get_16bit(5) / 1000.0f);
+  //  7    2   Cell overvoltage protection delay (÷1000 s)
+  this->publish_state_(this->cell_overvoltage_protection_delay_number_, ks_get_16bit(7) / 1000.0f);
+  //  9    2   Cell undervoltage protection     (÷1000 V)
+  this->publish_state_(this->cell_undervoltage_protection_number_, ks_get_16bit(9) / 1000.0f);
+  // 11    2   Cell undervoltage recovery       (÷1000 V)
+  this->publish_state_(this->cell_undervoltage_recovery_number_, ks_get_16bit(11) / 1000.0f);
+  // 13    2   Cell undervoltage protection delay (÷1000 s)
+  this->publish_state_(this->cell_undervoltage_protection_delay_number_, ks_get_16bit(13) / 1000.0f);
+  // 15    2   Pack overvoltage protection      (÷100 V)
+  this->publish_state_(this->pack_overvoltage_protection_number_, ks_get_16bit(15) / 100.0f);
+  // 17    2   Pack overvoltage recovery        (÷100 V)
+  this->publish_state_(this->pack_overvoltage_recovery_number_, ks_get_16bit(17) / 100.0f);
+  // 19    2   Pack overvoltage protection delay (÷1000 s)
+  this->publish_state_(this->pack_overvoltage_protection_delay_number_, ks_get_16bit(19) / 1000.0f);
+  // 21    2   Pack undervoltage protection     (÷100 V)
+  this->publish_state_(this->pack_undervoltage_protection_number_, ks_get_16bit(21) / 100.0f);
+  // 23    2   Pack undervoltage recovery       (÷100 V)
+  this->publish_state_(this->pack_undervoltage_recovery_number_, ks_get_16bit(23) / 100.0f);
+  // 25    2   Pack undervoltage protection delay (÷1000 s)
+  this->publish_state_(this->pack_undervoltage_protection_delay_number_, ks_get_16bit(25) / 1000.0f);
+}
+
+void KsBmsBle::decode_temperature_protection_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Temperature protection frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+
+  // Byte Len  Description                              (app: cdgwbh / cddwbh / fdgwbh / fddwbh)
+  // Temperature encoding: raw = °C × 10 + 2731  →  °C = (raw - 2731) / 10
+  //  3    2   Charge overtemperature protection  (Kelvin×10 → °C)
+  this->publish_state_(this->charge_overtemperature_protection_number_, (ks_get_16bit(3) - 2731) / 10.0f);
+  //  5    2   Charge overtemperature recovery    (Kelvin×10 → °C)
+  this->publish_state_(this->charge_overtemperature_recovery_number_, (ks_get_16bit(5) - 2731) / 10.0f);
+  //  7    2   Charge overtemperature protection delay (÷1000 s)
+  this->publish_state_(this->charge_overtemperature_protection_delay_number_, ks_get_16bit(7) / 1000.0f);
+  //  9    2   Charge undertemperature protection (Kelvin×10 → °C)
+  this->publish_state_(this->charge_undertemperature_protection_number_, (ks_get_16bit(9) - 2731) / 10.0f);
+  // 11    2   Charge undertemperature recovery   (Kelvin×10 → °C)
+  this->publish_state_(this->charge_undertemperature_recovery_number_, (ks_get_16bit(11) - 2731) / 10.0f);
+  // 13    2   Charge undertemperature protection delay (÷1000 s)
+  this->publish_state_(this->charge_undertemperature_protection_delay_number_, ks_get_16bit(13) / 1000.0f);
+  // 15    2   Discharge overtemperature protection (Kelvin×10 → °C)
+  this->publish_state_(this->discharge_overtemperature_protection_number_, (ks_get_16bit(15) - 2731) / 10.0f);
+  // 17    2   Discharge overtemperature recovery   (Kelvin×10 → °C)
+  this->publish_state_(this->discharge_overtemperature_recovery_number_, (ks_get_16bit(17) - 2731) / 10.0f);
+  // 19    2   Discharge overtemperature protection delay (÷1000 s)
+  this->publish_state_(this->discharge_overtemperature_protection_delay_number_, ks_get_16bit(19) / 1000.0f);
+  // 21    2   Discharge undertemperature protection (Kelvin×10 → °C)
+  this->publish_state_(this->discharge_undertemperature_protection_number_, (ks_get_16bit(21) - 2731) / 10.0f);
+  // 23    2   Discharge undertemperature recovery   (Kelvin×10 → °C)
+  this->publish_state_(this->discharge_undertemperature_recovery_number_, (ks_get_16bit(23) - 2731) / 10.0f);
+  // 25    2   Discharge undertemperature protection delay (÷1000 s)
+  this->publish_state_(this->discharge_undertemperature_protection_delay_number_, ks_get_16bit(25) / 1000.0f);
+}
+
+void KsBmsBle::decode_current_protection_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Current protection frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+
+  // Byte Len  Description                              (app: cdglbh / fdglbh)
+  //  3    2   Charge overcurrent protection      (÷100 A)
+  this->publish_state_(this->charge_overcurrent_protection_number_, ks_get_16bit(3) / 100.0f);
+  //  5    2   Charge overcurrent protection delay (÷1000 s)
+  this->publish_state_(this->charge_overcurrent_protection_delay_number_, ks_get_16bit(5) / 1000.0f);
+  //  7    2   Charge overcurrent recovery delay  (÷100 s)
+  this->publish_state_(this->charge_overcurrent_recovery_delay_number_, ks_get_16bit(7) / 100.0f);
+  //  9    2   Discharge overcurrent protection   (÷100 A)
+  this->publish_state_(this->discharge_overcurrent_protection_number_, ks_get_16bit(9) / 100.0f);
+  // 11    2   Discharge overcurrent protection delay (÷1000 s)
+  this->publish_state_(this->discharge_overcurrent_protection_delay_number_, ks_get_16bit(11) / 1000.0f);
+  // 13    2   Discharge overcurrent recovery delay (÷100 s)
+  this->publish_state_(this->discharge_overcurrent_recovery_delay_number_, ks_get_16bit(13) / 100.0f);
 }
 
 void KsBmsBle::decode_cell_voltages_data_(const std::vector<uint8_t> &data) {
@@ -688,6 +797,13 @@ void KsBmsBle::publish_state_(sensor::Sensor *sensor, float value) {
     return;
 
   sensor->publish_state(value);
+}
+
+void KsBmsBle::publish_state_(number::Number *obj, float value) {
+  if (obj == nullptr)
+    return;
+
+  obj->publish_state(value);
 }
 
 void KsBmsBle::publish_state_(switch_::Switch *obj, const bool &state) {
