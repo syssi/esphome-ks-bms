@@ -269,10 +269,10 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   //                         Bit 2: Charging
   //                         Bit 3: Discharging
   uint16_t fet_control_status = ks_get_16bit(29);
-  this->publish_state_(this->charging_binary_sensor_, check_bit_(fet_control_status, 8));
-  this->publish_state_(this->discharging_binary_sensor_, check_bit_(fet_control_status, 4));
-  this->publish_state_(this->charging_switch_, check_bit_(fet_control_status, 8));
-  this->publish_state_(this->discharging_switch_, check_bit_(fet_control_status, 4));
+  this->publish_state_(this->charging_binary_sensor_, check_bit_(fet_control_status, 4));
+  this->publish_state_(this->discharging_binary_sensor_, check_bit_(fet_control_status, 8));
+  this->publish_state_(this->charging_switch_, check_bit_(fet_control_status, 4));
+  this->publish_state_(this->discharging_switch_, check_bit_(fet_control_status, 8));
   this->publish_state_(this->balancer_status_text_sensor_,
                        this->fet_control_status_to_balancer_status_text_(fet_control_status));
 
