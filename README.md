@@ -82,7 +82,7 @@ esphome run esp32-ble-example.yaml
 [D][binary_sensor:036]: 'ks-bms-ble charging': Sending state ON
 [D][binary_sensor:036]: 'ks-bms-ble discharging': Sending state ON
 [D][sensor:098]: 'ks-bms-ble error bitmask': Sending state 0.00000  with 0 decimals of accuracy
-[V][text_sensor:015]: 'ks-bms-ble errors': Received new state 
+[V][text_sensor:015]: 'ks-bms-ble errors': Received new state
 [D][text_sensor:069]: 'ks-bms-ble errors': Sending state ''
 [D][sensor:098]: 'ks-bms-ble state of health': Sending state 100.00000 % with 0 decimals of accuracy
 
