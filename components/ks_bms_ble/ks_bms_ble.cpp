@@ -46,7 +46,7 @@ static const uint8_t KS_COMMAND_QUEUE[KS_COMMAND_QUEUE_SIZE] = {
 };
 
 static const uint8_t ERRORS_SIZE = 16;
-static const char *const ERRORS[ERRORS_SIZE] = {"Over current protection",
+static constexpr const char *const ERRORS[ERRORS_SIZE] = {"Over current protection",
                                                 "Under current protection",
                                                 "Over voltage protection",
                                                 "Under voltage protection",
