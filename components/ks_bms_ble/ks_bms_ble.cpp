@@ -65,6 +65,8 @@ static constexpr const char *const ERRORS[ERRORS_SIZE] = {
     "Reserved",
 };
 
+#ifdef USE_ESP32
+
 void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if,
                                    esp_ble_gattc_cb_param_t *param) {
   switch (event) {
@@ -144,6 +146,50 @@ void KsBmsBle::update() {
   }
 }
 
+bool KsBmsBle::write_register(uint8_t address, uint16_t value) {
+  uint8_t frame[6] = {KS_PKT_START, address, 0x02, (uint8_t) (value >> 8), (uint8_t) (value & 0xFF), KS_PKT_END};
+
+  ESP_LOGD(TAG, "Write register (handle 0x%02X): %s", this->char_command_handle_,
+           format_hex_pretty(frame, sizeof(frame)).c_str());  // NOLINT
+
+  auto status =
+      esp_ble_gattc_write_char(this->parent_->get_gattc_if(), this->parent_->get_conn_id(), this->char_command_handle_,
+                               sizeof(frame), frame, ESP_GATT_WRITE_TYPE_NO_RSP, ESP_GATT_AUTH_REQ_NONE);
+
+  if (status) {
+    ESP_LOGW(TAG, "[%s] esp_ble_gattc_write_char failed, status=%d", ADDR_STR(this->parent_->address_str()), status);
+  }
+  return status == 0;
+}
+
+bool KsBmsBle::send_command_(uint8_t function) {
+  uint8_t frame[4];
+
+  frame[0] = KS_PKT_START;
+  frame[1] = function;
+  frame[2] = 0x00;
+  frame[3] = KS_PKT_END;
+
+  ESP_LOGD(TAG, "Send command (handle 0x%02X): %s", this->char_command_handle_,
+           format_hex_pretty(frame, sizeof(frame)).c_str());  // NOLINT
+
+  auto status =
+      esp_ble_gattc_write_char(this->parent_->get_gattc_if(), this->parent_->get_conn_id(), this->char_command_handle_,
+                               sizeof(frame), frame, ESP_GATT_WRITE_TYPE_NO_RSP, ESP_GATT_AUTH_REQ_NONE);
+
+  if (status) {
+    ESP_LOGW(TAG, "[%s] esp_ble_gattc_write_char failed, status=%d", ADDR_STR(this->parent_->address_str()), status);
+  }
+
+  return (status == 0);
+}
+
+#else  // USE_ESP32
+
+void KsBmsBle::update() {}
+
+#endif  // USE_ESP32
+
 void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8_t> &data) {
   if (data[0] != KS_PKT_START || data.back() != KS_PKT_END || (data.size() > 3 && data.size() != data[2] + 4) ||
       data.size() > MAX_RESPONSE_SIZE) {
@@ -155,6 +201,7 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
 
   switch (frame_type) {
     case KS_FRAME_TYPE_STATUS:
+    case KS_FRAME_TYPE_STATUS_TYPE2:
       this->decode_status_data_(data);
       break;
     case KS_FRAME_TYPE_CELL_VOLTAGES:
@@ -655,44 +702,6 @@ void KsBmsBle::publish_state_(text_sensor::TextSensor *text_sensor, const std::s
     return;
 
   text_sensor->publish_state(state);
-}
-
-bool KsBmsBle::write_register(uint8_t address, uint16_t value) {
-  uint8_t frame[6] = {KS_PKT_START, address, 0x02, (uint8_t) (value >> 8), (uint8_t) (value & 0xFF), KS_PKT_END};
-
-  ESP_LOGD(TAG, "Write register (handle 0x%02X): %s", this->char_command_handle_,
-           format_hex_pretty(frame, sizeof(frame)).c_str());  // NOLINT
-
-  auto status =
-      esp_ble_gattc_write_char(this->parent_->get_gattc_if(), this->parent_->get_conn_id(), this->char_command_handle_,
-                               sizeof(frame), frame, ESP_GATT_WRITE_TYPE_NO_RSP, ESP_GATT_AUTH_REQ_NONE);
-
-  if (status) {
-    ESP_LOGW(TAG, "[%s] esp_ble_gattc_write_char failed, status=%d", ADDR_STR(this->parent_->address_str()), status);
-  }
-  return status == 0;
-}
-
-bool KsBmsBle::send_command_(uint8_t function) {
-  uint8_t frame[4];
-
-  frame[0] = KS_PKT_START;
-  frame[1] = function;
-  frame[2] = 0x00;
-  frame[3] = KS_PKT_END;
-
-  ESP_LOGD(TAG, "Send command (handle 0x%02X): %s", this->char_command_handle_,
-           format_hex_pretty(frame, sizeof(frame)).c_str());  // NOLINT
-
-  auto status =
-      esp_ble_gattc_write_char(this->parent_->get_gattc_if(), this->parent_->get_conn_id(), this->char_command_handle_,
-                               sizeof(frame), frame, ESP_GATT_WRITE_TYPE_NO_RSP, ESP_GATT_AUTH_REQ_NONE);
-
-  if (status) {
-    ESP_LOGW(TAG, "[%s] esp_ble_gattc_write_char failed, status=%d", ADDR_STR(this->parent_->address_str()), status);
-  }
-
-  return (status == 0);
 }
 
 std::string KsBmsBle::bitmask_to_string_(const char *const messages[], const uint8_t &messages_size,
