@@ -37,12 +37,16 @@ static const uint8_t KS_FRAME_TYPE_BLUETOOTH_SOFTWARE_VERSION = 0x74;
 static const uint8_t KS_FRAME_TYPE_SOFTWARE_VERSION = 0xF3;  // No response
 static const uint8_t KS_FRAME_TYPE_HARDWARE_VERSION = 0xF4;
 static const uint8_t KS_FRAME_TYPE_BOOTLOADER_VERSION = 0xF5;
+static const uint8_t KS_FRAME_TYPE_VOLTAGE_PROTECTION = 0x05;
+static const uint8_t KS_FRAME_TYPE_TEMPERATURE_PROTECTION = 0x06;
+static const uint8_t KS_FRAME_TYPE_CURRENT_PROTECTION = 0x07;
 
-static const uint8_t KS_COMMAND_QUEUE_SIZE = 9;
+static const uint8_t KS_COMMAND_QUEUE_SIZE = 12;
 static const uint8_t KS_COMMAND_QUEUE[KS_COMMAND_QUEUE_SIZE] = {
-    KS_FRAME_TYPE_CELL_VOLTAGES,      KS_FRAME_TYPE_TEMPERATURES,     KS_FRAME_TYPE_HISTORY,
-    KS_FRAME_TYPE_MANUFACTURING_DATE, KS_FRAME_TYPE_MODEL_NAME,       KS_FRAME_TYPE_SERIAL_NUMBER,
-    KS_FRAME_TYPE_MODEL_TYPE,         KS_FRAME_TYPE_HARDWARE_VERSION, KS_FRAME_TYPE_BOOTLOADER_VERSION,
+    KS_FRAME_TYPE_CELL_VOLTAGES,       KS_FRAME_TYPE_TEMPERATURES,          KS_FRAME_TYPE_HISTORY,
+    KS_FRAME_TYPE_MANUFACTURING_DATE,  KS_FRAME_TYPE_MODEL_NAME,            KS_FRAME_TYPE_SERIAL_NUMBER,
+    KS_FRAME_TYPE_MODEL_TYPE,          KS_FRAME_TYPE_HARDWARE_VERSION,      KS_FRAME_TYPE_BOOTLOADER_VERSION,
+    KS_FRAME_TYPE_VOLTAGE_PROTECTION,  KS_FRAME_TYPE_TEMPERATURE_PROTECTION, KS_FRAME_TYPE_CURRENT_PROTECTION,
 };
 
 static const uint8_t ERRORS_SIZE = 16;
@@ -189,6 +193,18 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
       break;
     case KS_FRAME_TYPE_HISTORY:
       ESP_LOGD(TAG, "History frame received (ignored): %s",
+               format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+      break;
+    case KS_FRAME_TYPE_VOLTAGE_PROTECTION:
+      ESP_LOGI(TAG, "Voltage protection frame: %s",
+               format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+      break;
+    case KS_FRAME_TYPE_TEMPERATURE_PROTECTION:
+      ESP_LOGI(TAG, "Temperature protection frame: %s",
+               format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+      break;
+    case KS_FRAME_TYPE_CURRENT_PROTECTION:
+      ESP_LOGI(TAG, "Current protection frame: %s",
                format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
       break;
 
