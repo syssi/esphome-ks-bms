@@ -209,44 +209,43 @@ TEST(KsBmsBleDispatchTest, InvalidFrameTooLong) {
 
 // ── Cell voltages frame (0x02) ────────────────────────────────────────────────
 
-TEST(KsBmsBleVoltagesTest, CellVoltagesSampled) {
+TEST(KsBmsBleVoltagesTest, AllSixteenCellVoltages) {
   TestableKsBmsBle bms;
-  sensor::Sensor c1, c2, c16;
-  bms.set_cell_voltage_sensor(0, &c1);
-  bms.set_cell_voltage_sensor(1, &c2);
-  bms.set_cell_voltage_sensor(15, &c16);
-
-  bms.decode_cell_voltages_data_(CELL_VOLTAGES_FRAME_1);
-
-  EXPECT_NEAR(c1.state, 3.288f, 0.0001f);
-  EXPECT_NEAR(c2.state, 3.290f, 0.0001f);
-  EXPECT_NEAR(c16.state, 3.286f, 0.0001f);
-}
-
-TEST(KsBmsBleVoltagesTest, MinCellIsC16MaxCellIsC2) {
-  TestableKsBmsBle bms;
-  sensor::Sensor vmin, vmax, vmin_cell, vmax_cell;
+  sensor::Sensor cells[16];
+  for (int i = 0; i < 16; i++) {
+    bms.set_cell_voltage_sensor(i, &cells[i]);
+  }
+  sensor::Sensor vmin, vmax, vmin_cell, vmax_cell, delta, avg;
   bms.set_min_cell_voltage_sensor(&vmin);
   bms.set_max_cell_voltage_sensor(&vmax);
   bms.set_min_voltage_cell_sensor(&vmin_cell);
   bms.set_max_voltage_cell_sensor(&vmax_cell);
-
-  bms.decode_cell_voltages_data_(CELL_VOLTAGES_FRAME_1);
-
-  EXPECT_NEAR(vmin.state, 3.286f, 0.0001f);
-  EXPECT_FLOAT_EQ(vmin_cell.state, 16.0f);
-  EXPECT_NEAR(vmax.state, 3.290f, 0.0001f);
-  EXPECT_FLOAT_EQ(vmax_cell.state, 2.0f);
-}
-
-TEST(KsBmsBleVoltagesTest, DeltaAndAverage) {
-  TestableKsBmsBle bms;
-  sensor::Sensor delta, avg;
   bms.set_delta_cell_voltage_sensor(&delta);
   bms.set_average_cell_voltage_sensor(&avg);
 
   bms.decode_cell_voltages_data_(CELL_VOLTAGES_FRAME_1);
 
+  EXPECT_NEAR(cells[0].state, 3.288f, 0.0001f);   // C1
+  EXPECT_NEAR(cells[1].state, 3.290f, 0.0001f);   // C2
+  EXPECT_NEAR(cells[2].state, 3.289f, 0.0001f);   // C3
+  EXPECT_NEAR(cells[3].state, 3.288f, 0.0001f);   // C4
+  EXPECT_NEAR(cells[4].state, 3.288f, 0.0001f);   // C5
+  EXPECT_NEAR(cells[5].state, 3.288f, 0.0001f);   // C6
+  EXPECT_NEAR(cells[6].state, 3.289f, 0.0001f);   // C7
+  EXPECT_NEAR(cells[7].state, 3.288f, 0.0001f);   // C8
+  EXPECT_NEAR(cells[8].state, 3.288f, 0.0001f);   // C9
+  EXPECT_NEAR(cells[9].state, 3.289f, 0.0001f);   // C10
+  EXPECT_NEAR(cells[10].state, 3.289f, 0.0001f);  // C11
+  EXPECT_NEAR(cells[11].state, 3.288f, 0.0001f);  // C12
+  EXPECT_NEAR(cells[12].state, 3.289f, 0.0001f);  // C13
+  EXPECT_NEAR(cells[13].state, 3.289f, 0.0001f);  // C14
+  EXPECT_NEAR(cells[14].state, 3.288f, 0.0001f);  // C15
+  EXPECT_NEAR(cells[15].state, 3.286f, 0.0001f);  // C16
+
+  EXPECT_NEAR(vmin.state, 3.286f, 0.0001f);
+  EXPECT_NEAR(vmax.state, 3.290f, 0.0001f);
+  EXPECT_FLOAT_EQ(vmin_cell.state, 16.0f);
+  EXPECT_FLOAT_EQ(vmax_cell.state, 2.0f);
   EXPECT_NEAR(delta.state, 0.004f, 0.0001f);
   EXPECT_NEAR(avg.state, 3.288375f, 0.0001f);
 }
@@ -276,14 +275,18 @@ TEST(KsBmsBleTemperaturesTest, AllSensorsEighteenDegrees) {
 
 TEST(KsBmsBleTemperaturesTest, MixedTemperatures) {
   TestableKsBmsBle bms;
-  sensor::Sensor t1, t2;
+  sensor::Sensor t1, t2, t3, t4;
   bms.set_temperature_sensor(0, &t1);
   bms.set_temperature_sensor(1, &t2);
+  bms.set_temperature_sensor(2, &t3);
+  bms.set_temperature_sensor(3, &t4);
 
-  bms.decode_temperatures_data_(TEMPERATURES_FRAME_2);  // T1=13.0°C  T2=14.0°C
+  bms.decode_temperatures_data_(TEMPERATURES_FRAME_2);  // T1=13.0°C  T2–T4=14.0°C
 
   EXPECT_NEAR(t1.state, 13.0f, 0.1f);
   EXPECT_NEAR(t2.state, 14.0f, 0.1f);
+  EXPECT_NEAR(t3.state, 14.0f, 0.1f);
+  EXPECT_NEAR(t4.state, 14.0f, 0.1f);
 }
 
 TEST(KsBmsBleTemperaturesTest, NullSensorsDoNotCrash) {
@@ -385,6 +388,182 @@ TEST(KsBmsBleBootloaderVersionTest, Version2Dot57) {
 TEST(KsBmsBleBootloaderVersionTest, DispatchedViaOnData) {
   TestableKsBmsBle bms;
   bms.on_ks_bms_ble_data(0, BOOTLOADER_VERSION_FRAME_1);
+}
+
+// ── Voltage protection frame (0x05) ───────────────────────────────────────────
+
+TEST(KsBmsBleVoltageProtectionTest, CellVoltageProtection) {
+  TestableKsBmsBle bms;
+  TestNumber cell_ovp, cell_ovr, cell_ovp_delay;
+  bms.set_cell_overvoltage_protection_number(&cell_ovp);
+  bms.set_cell_overvoltage_recovery_number(&cell_ovr);
+  bms.set_cell_overvoltage_protection_delay_number(&cell_ovp_delay);
+
+  bms.decode_voltage_protection_data_(VOLTAGE_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(cell_ovp.state, 3.650f, 0.001f);
+  EXPECT_NEAR(cell_ovr.state, 3.380f, 0.001f);
+  EXPECT_NEAR(cell_ovp_delay.state, 2.0f, 0.001f);
+}
+
+TEST(KsBmsBleVoltageProtectionTest, CellUndervoltageProtection) {
+  TestableKsBmsBle bms;
+  TestNumber cell_uvp, cell_uvr, cell_uvp_delay;
+  bms.set_cell_undervoltage_protection_number(&cell_uvp);
+  bms.set_cell_undervoltage_recovery_number(&cell_uvr);
+  bms.set_cell_undervoltage_protection_delay_number(&cell_uvp_delay);
+
+  bms.decode_voltage_protection_data_(VOLTAGE_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(cell_uvp.state, 2.50f, 0.001f);
+  EXPECT_NEAR(cell_uvr.state, 3.00f, 0.001f);
+  EXPECT_NEAR(cell_uvp_delay.state, 5.0f, 0.001f);
+}
+
+TEST(KsBmsBleVoltageProtectionTest, PackVoltageProtection) {
+  TestableKsBmsBle bms;
+  TestNumber pack_ovp, pack_ovr, pack_ovp_delay;
+  bms.set_pack_overvoltage_protection_number(&pack_ovp);
+  bms.set_pack_overvoltage_recovery_number(&pack_ovr);
+  bms.set_pack_overvoltage_protection_delay_number(&pack_ovp_delay);
+
+  bms.decode_voltage_protection_data_(VOLTAGE_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(pack_ovp.state, 58.4f, 0.01f);
+  EXPECT_NEAR(pack_ovr.state, 54.4f, 0.01f);
+  EXPECT_NEAR(pack_ovp_delay.state, 2.0f, 0.001f);
+}
+
+TEST(KsBmsBleVoltageProtectionTest, PackUndervoltageProtection) {
+  TestableKsBmsBle bms;
+  TestNumber pack_uvp, pack_uvr, pack_uvp_delay;
+  bms.set_pack_undervoltage_protection_number(&pack_uvp);
+  bms.set_pack_undervoltage_recovery_number(&pack_uvr);
+  bms.set_pack_undervoltage_protection_delay_number(&pack_uvp_delay);
+
+  bms.decode_voltage_protection_data_(VOLTAGE_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(pack_uvp.state, 40.0f, 0.01f);
+  EXPECT_NEAR(pack_uvr.state, 48.0f, 0.01f);
+  EXPECT_NEAR(pack_uvp_delay.state, 2.0f, 0.001f);
+}
+
+TEST(KsBmsBleVoltageProtectionTest, NullNumbersDoNotCrash) {
+  TestableKsBmsBle bms;
+  bms.decode_voltage_protection_data_(VOLTAGE_PROTECTION_FRAME_1);
+}
+
+TEST(KsBmsBleVoltageProtectionTest, DispatchedViaOnData) {
+  TestableKsBmsBle bms;
+  bms.on_ks_bms_ble_data(0, VOLTAGE_PROTECTION_FRAME_1);
+}
+
+// ── Temperature protection frame (0x06) ───────────────────────────────────────
+
+TEST(KsBmsBleTemperatureProtectionTest, ChargeOvertemperature) {
+  TestableKsBmsBle bms;
+  TestNumber prot, rec, delay;
+  bms.set_charge_overtemperature_protection_number(&prot);
+  bms.set_charge_overtemperature_recovery_number(&rec);
+  bms.set_charge_overtemperature_protection_delay_number(&delay);
+
+  bms.decode_temperature_protection_data_(TEMPERATURE_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(prot.state, 50.4f, 0.1f);
+  EXPECT_NEAR(rec.state, 45.0f, 0.1f);
+  EXPECT_NEAR(delay.state, 0.003f, 0.0001f);
+}
+
+TEST(KsBmsBleTemperatureProtectionTest, ChargeUndertemperature) {
+  TestableKsBmsBle bms;
+  TestNumber prot, rec, delay;
+  bms.set_charge_undertemperature_protection_number(&prot);
+  bms.set_charge_undertemperature_recovery_number(&rec);
+  bms.set_charge_undertemperature_protection_delay_number(&delay);
+
+  bms.decode_temperature_protection_data_(TEMPERATURE_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(prot.state, 20.0f, 0.1f);
+  EXPECT_NEAR(rec.state, 10.0f, 0.1f);
+  EXPECT_NEAR(delay.state, 0.005f, 0.0001f);
+}
+
+TEST(KsBmsBleTemperatureProtectionTest, DischargeOvertemperature) {
+  TestableKsBmsBle bms;
+  TestNumber prot, rec, delay;
+  bms.set_discharge_overtemperature_protection_number(&prot);
+  bms.set_discharge_overtemperature_recovery_number(&rec);
+  bms.set_discharge_overtemperature_protection_delay_number(&delay);
+
+  bms.decode_temperature_protection_data_(TEMPERATURE_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(prot.state, 65.0f, 0.1f);
+  EXPECT_NEAR(rec.state, 53.4f, 0.1f);
+  EXPECT_NEAR(delay.state, 0.003f, 0.0001f);
+}
+
+TEST(KsBmsBleTemperatureProtectionTest, DischargeUndertemperature) {
+  TestableKsBmsBle bms;
+  TestNumber prot, rec, delay;
+  bms.set_discharge_undertemperature_protection_number(&prot);
+  bms.set_discharge_undertemperature_recovery_number(&rec);
+  bms.set_discharge_undertemperature_protection_delay_number(&delay);
+
+  bms.decode_temperature_protection_data_(TEMPERATURE_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(prot.state, -20.0f, 0.1f);
+  EXPECT_NEAR(rec.state, 0.0f, 0.1f);
+  EXPECT_NEAR(delay.state, 0.005f, 0.0001f);
+}
+
+TEST(KsBmsBleTemperatureProtectionTest, NullNumbersDoNotCrash) {
+  TestableKsBmsBle bms;
+  bms.decode_temperature_protection_data_(TEMPERATURE_PROTECTION_FRAME_1);
+}
+
+TEST(KsBmsBleTemperatureProtectionTest, DispatchedViaOnData) {
+  TestableKsBmsBle bms;
+  bms.on_ks_bms_ble_data(0, TEMPERATURE_PROTECTION_FRAME_1);
+}
+
+// ── Current protection frame (0x07) ───────────────────────────────────────────
+
+TEST(KsBmsBleCurrentProtectionTest, ChargeOvercurrent) {
+  TestableKsBmsBle bms;
+  TestNumber prot, prot_delay, rec_delay;
+  bms.set_charge_overcurrent_protection_number(&prot);
+  bms.set_charge_overcurrent_protection_delay_number(&prot_delay);
+  bms.set_charge_overcurrent_recovery_delay_number(&rec_delay);
+
+  bms.decode_current_protection_data_(CURRENT_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(prot.state, 315.0f, 0.1f);
+  EXPECT_NEAR(prot_delay.state, 3.083f, 0.001f);
+  EXPECT_NEAR(rec_delay.state, 30.0f, 0.1f);
+}
+
+TEST(KsBmsBleCurrentProtectionTest, DischargeOvercurrent) {
+  TestableKsBmsBle bms;
+  TestNumber prot, prot_delay, rec_delay;
+  bms.set_discharge_overcurrent_protection_number(&prot);
+  bms.set_discharge_overcurrent_protection_delay_number(&prot_delay);
+  bms.set_discharge_overcurrent_recovery_delay_number(&rec_delay);
+
+  bms.decode_current_protection_data_(CURRENT_PROTECTION_FRAME_1);
+
+  EXPECT_NEAR(prot.state, 1.23f, 0.01f);
+  EXPECT_NEAR(prot_delay.state, 3.083f, 0.001f);
+  EXPECT_NEAR(rec_delay.state, 30.0f, 0.1f);
+}
+
+TEST(KsBmsBleCurrentProtectionTest, NullNumbersDoNotCrash) {
+  TestableKsBmsBle bms;
+  bms.decode_current_protection_data_(CURRENT_PROTECTION_FRAME_1);
+}
+
+TEST(KsBmsBleCurrentProtectionTest, DispatchedViaOnData) {
+  TestableKsBmsBle bms;
+  bms.on_ks_bms_ble_data(0, CURRENT_PROTECTION_FRAME_1);
 }
 
 }  // namespace esphome::ks_bms_ble::testing
