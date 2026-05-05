@@ -207,7 +207,7 @@ static const std::vector<uint8_t> BLUETOOTH_SW_VERSION_FRAME_1 = {
     0x7D,
 };
 
-// WiFi variant: version = "KS_BLE_WiFi_Ver1.0.0_20250529"  (29 ASCII bytes, data_len=0x1D)
+// WiFi variant: version = "KS_BLE_WIFI_Ver1.0.0_20250529"  (29 ASCII bytes, data_len=0x1D)
 // Real frame from tests/esp32-ble-example-faker-ks48300.yaml - different length than non-WiFi variant
 static const std::vector<uint8_t> BLUETOOTH_SW_VERSION_FRAME_2 = {
     0x7B, 0x74, 0x1D,                                            // start | type=BT_SW_VERSION | data_len=29

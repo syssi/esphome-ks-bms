@@ -443,7 +443,7 @@ TEST(KsBmsBleBtSwVersionTest, WiFiVariantPublishesVersionString) {
   text_sensor::TextSensor ver;
   bms.set_bluetooth_software_version_text_sensor(&ver);
   bms.decode_bluetooth_software_version_data_(BLUETOOTH_SW_VERSION_FRAME_2);
-  EXPECT_EQ(ver.state, "KS_BLE_WiFi_Ver1.0.0_20250529");
+  EXPECT_EQ(ver.state, "KS_BLE_WIFI_Ver1.0.0_20250529");
 }
 
 TEST(KsBmsBleBtSwVersionTest, WiFiVariantDispatchedViaOnData) {
@@ -451,7 +451,7 @@ TEST(KsBmsBleBtSwVersionTest, WiFiVariantDispatchedViaOnData) {
   text_sensor::TextSensor ver;
   bms.set_bluetooth_software_version_text_sensor(&ver);
   bms.on_ks_bms_ble_data(0, BLUETOOTH_SW_VERSION_FRAME_2);
-  EXPECT_EQ(ver.state, "KS_BLE_WiFi_Ver1.0.0_20250529");
+  EXPECT_EQ(ver.state, "KS_BLE_WIFI_Ver1.0.0_20250529");
 }
 
 TEST(KsBmsBleBtSwVersionTest, DispatchedViaOnData) {
