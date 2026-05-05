@@ -11,14 +11,18 @@ class TestableKsBmsBle : public KsBmsBle {
   using KsBmsBle::decode_bluetooth_software_version_data_;
   using KsBmsBle::decode_bootloader_version_data_;
   using KsBmsBle::decode_cell_voltages_data_;
+  using KsBmsBle::decode_current_protection_data_;
   using KsBmsBle::decode_hardware_version_data_;
   using KsBmsBle::decode_manufacturing_date_data_;
   using KsBmsBle::decode_model_name_data_;
   using KsBmsBle::decode_model_type_data_;
   using KsBmsBle::decode_serial_number_data_;
   using KsBmsBle::decode_software_version_data_;
+  using KsBmsBle::decode_basic_config_data_;
   using KsBmsBle::decode_status_data_;
   using KsBmsBle::decode_temperatures_data_;
+  using KsBmsBle::decode_temperature_protection_data_;
+  using KsBmsBle::decode_voltage_protection_data_;
   using KsBmsBle::on_ks_bms_ble_data;
 };
 
@@ -28,7 +32,13 @@ class TestSwitch : public switch_::Switch {
   void write_state(bool state) override { this->publish_state(state); }
 };
 
-// ── Real frames from esp32-ble-example-faker.yaml ────────────────────────────
+// Concrete Number implementation for testing (control is pure virtual).
+class TestNumber : public number::Number {
+ protected:
+  void control(float value) override { this->publish_state(value); }
+};
+
+// ── Real frames from tests/esp32-ble-example-faker-ks48300.yaml ─────────────────
 //
 // Values are decoded inline next to each relevant byte group so the test
 // expectations can be verified by reading the frame definition alone.
@@ -140,6 +150,21 @@ static const std::vector<uint8_t> MODEL_NAME_FRAME_1 = {
     0x7D,
 };
 
+// empty response (data_len=0) - BL-250-100-100 esphome.log 2026-04-28
+static const std::vector<uint8_t> MODEL_NAME_FRAME_EMPTY = {
+    0x7B,
+    0x0A,
+    0x00,  // start | type=MODEL_NAME | data_len=0
+    0x7D,
+};
+
+// date: 2024-10-15 - synthetic test fixture
+static const std::vector<uint8_t> MANUFACTURING_DATE_FRAME_2 = {
+    0x7B, 0x09, 0x03,  // start | type=MANUFACTURING_DATE | data_len=3
+    0x18, 0x0A, 0x0F,  // year=24+2000=2024  month=10  day=15
+    0x7D,
+};
+
 // ── Serial number frame (0x0B) ────────────────────────────────────────────────
 // serial = "CER2410-018-030-023"  (19 ASCII bytes)
 static const std::vector<uint8_t> SERIAL_NUMBER_FRAME_1 = {
@@ -149,7 +174,21 @@ static const std::vector<uint8_t> SERIAL_NUMBER_FRAME_1 = {
     0x7D,
 };
 
+// serial = "BL-250-100-100"  (14 ASCII bytes) - BL-250-100-100 esphome.log 2026-04-28
+static const std::vector<uint8_t> SERIAL_NUMBER_FRAME_2 = {
+    0x7B, 0x0B, 0x0E,  // start | type=SERIAL_NUMBER | data_len=14
+    0x42, 0x4C, 0x2D, 0x32, 0x35, 0x30, 0x2D, 0x31, 0x30, 0x30, 0x2D, 0x31, 0x30, 0x30,  // "BL-250-100-100"
+    0x7D,
+};
+
 // ── Model type frame (0x0C) ───────────────────────────────────────────────────
+// type = "KS48300"  (7 ASCII bytes) - synthetic test fixture
+static const std::vector<uint8_t> MODEL_TYPE_FRAME_2 = {
+    0x7B, 0x0C, 0x07,                          // start | type=MODEL_TYPE | data_len=7
+    0x4B, 0x53, 0x34, 0x38, 0x33, 0x30, 0x30,  // "KS48300"
+    0x7D,
+};
+
 // type unset (all 0xFF)
 static const std::vector<uint8_t> MODEL_TYPE_FRAME_1 = {
     0x7B, 0x0C, 0x14,                                            // start | type=MODEL_TYPE | data_len=20
@@ -168,8 +207,18 @@ static const std::vector<uint8_t> BLUETOOTH_SW_VERSION_FRAME_1 = {
     0x7D,
 };
 
+// WiFi variant: version = "KS_BLE_WIFI_Ver1.0.0_20250529"  (29 ASCII bytes, data_len=0x1D)
+// Real frame from tests/esp32-ble-example-faker-ks48300.yaml - different length than non-WiFi variant
+static const std::vector<uint8_t> BLUETOOTH_SW_VERSION_FRAME_2 = {
+    0x7B, 0x74, 0x1D,                                            // start | type=BT_SW_VERSION | data_len=29
+    0x4B, 0x53, 0x5F, 0x42, 0x4C, 0x45, 0x5F, 0x57, 0x49, 0x46,  // "KS_BLE_WiF"
+    0x49, 0x5F, 0x56, 0x65, 0x72, 0x31, 0x2E, 0x30, 0x2E, 0x30,  // "i_Ver1.0.0"
+    0x5F, 0x32, 0x30, 0x32, 0x35, 0x30, 0x35, 0x32, 0x39,        // "_20250529"
+    0x7D,
+};
+
 // ── Software version frame (0xF3) ─────────────────────────────────────────────
-// 0xF3 is "No response" in the faker — frame constructed from source comments
+// 0xF3 is "No response" in the faker - frame constructed from source comments
 // version = 1.5
 static const std::vector<uint8_t> SOFTWARE_VERSION_FRAME_1 = {
     0x7B, 0xF3, 0x02,  // start | type=SW_VERSION | data_len=2
@@ -193,7 +242,106 @@ static const std::vector<uint8_t> BOOTLOADER_VERSION_FRAME_1 = {
     0x7D,
 };
 
-// Invalid frames (from faker.yaml — used to test rejection logic)
+// ── Voltage protection frame (0x05) ───────────────────────────────────────────
+// Real frame from tests/esp32-ble-example-faker-ks48300.yaml
+// cell_ovp=3.648V, cell_ovr=3.380V, delay=2.0s, cell_uvp=2.50V, cell_uvr=3.00V
+// pack_ovp=58.4V, pack_ovr=54.4V, delay=2.0s, pack_uvp=40.0V, pack_uvr=48.0V
+static const std::vector<uint8_t> VOLTAGE_PROTECTION_FRAME_1 = {
+    0x7B, 0x05, 0x18,  // start | type=VOLTAGE_PROTECTION | data_len=24
+    0x0E, 0x42,        // cell_overvoltage_protection   = 3648/1000 = 3.648 V
+    0x0D, 0x34,        // cell_overvoltage_recovery     = 3380/1000 = 3.380 V
+    0x07, 0xD0,        // cell_overvoltage_protection_delay = 2000/1000 = 2.0 s
+    0x09, 0xC4,        // cell_undervoltage_protection  = 2500/1000 = 2.50 V
+    0x0B, 0xB8,        // cell_undervoltage_recovery    = 3000/1000 = 3.00 V
+    0x13, 0x88,        // cell_undervoltage_protection_delay = 5000/1000 = 5.0 s
+    0x16, 0xD0,        // pack_overvoltage_protection   = 5840/100 = 58.4 V
+    0x15, 0x40,        // pack_overvoltage_recovery     = 5440/100 = 54.4 V
+    0x07, 0xD0,        // pack_overvoltage_protection_delay = 2000/1000 = 2.0 s
+    0x0F, 0xA0,        // pack_undervoltage_protection = 4000/100 = 40.0 V
+    0x12, 0xC0,        // pack_undervoltage_recovery    = 4800/100 = 48.0 V
+    0x07, 0xD0,        // pack_undervoltage_protection_delay = 2000/1000 = 2.0 s
+    0x7D,
+};
+
+// ── Temperature protection frame (0x06) ─────────────────────────────────────────
+// Real frame from tests/esp32-ble-example-faker-ks48300.yaml
+// charge 50/45/3°C, 20/10/5°C, discharge 65/55/3°C, -10/0/5°C
+// Kelvin encoding: raw = °C * 10 + 2731
+static const std::vector<uint8_t> TEMPERATURE_PROTECTION_FRAME_1 = {
+    0x7B, 0x06, 0x18,  // start | type=TEMPERATURE_PROTECTION | data_len=24
+    0x0C, 0xA3,        // charge_overtemperature_protection    = 50°C
+    0x0C, 0x6D,        // charge_overtemperature_recovery      = 45°C
+    0x00, 0x03,        // charge_overtemperature_protection_delay = 3.0 s
+    0x0B, 0x73,        // charge_undertemperature_protection   = 20°C
+    0x0B, 0x0F,        // charge_undertemperature_recovery      = 10°C
+    0x00, 0x05,        // charge_undertemperature_protection_delay = 5.0 s
+    0x0D, 0x35,        // discharge_overtemperature_protection = 65°C
+    0x0C, 0xC1,        // discharge_overtemperature_recovery   = 55°C
+    0x00, 0x03,        // discharge_overtemperature_protection_delay = 3.0 s
+    0x09, 0xE3,        // discharge_undertemperature_protection = -10°C
+    0x0A, 0xAB,        // discharge_undertemperature_recovery  = 0°C
+    0x00, 0x05,        // discharge_undertemperature_protection_delay = 5.0 s
+    0x7D,
+};
+
+// ── Current protection frame (0x07) ────────────────────────────────────────────
+// Real frame from tests/esp32-ble-example-faker-ks48300.yaml
+// charge 314.68A/3.083s/30s, discharge 1.23A/3.083s/30s
+static const std::vector<uint8_t> CURRENT_PROTECTION_FRAME_1 = {
+    0x7B, 0x07, 0x0C,  // start | type=CURRENT_PROTECTION | data_len=12
+    0x7B, 0x0C,        // charge_overcurrent_protection = 31468/100 = 314.68 A
+    0x0C, 0x0B,        // charge_overcurrent_protection_delay = 3083/1000 = 3.083 s
+    0x0B, 0xB8,        // charge_overcurrent_recovery_delay = 3000/100 = 30.0 s
+    0x00, 0x7B,        // discharge_overcurrent_protection = 123/100 = 1.23 A
+    0x0C, 0x0B,        // discharge_overcurrent_protection_delay = 3083/1000 = 3.083 s
+    0x0B, 0xB8,        // discharge_overcurrent_recovery_delay = 3000/100 = 30.0 s
+    0x7D,
+};
+
+// ── Basic config frame (0x04) ─────────────────────────────────────────────────
+// cell_full=3.650V  cell_cutoff=3.000V  bal_open=3.350V  bal_diff=0.010V
+// reg0x14=0  reg0x15=1.00
+// soc80=3.450V  soc60=3.380V  soc40=3.320V  soc20=3.250V
+static const std::vector<uint8_t> BASIC_CONFIG_FRAME_1 = {
+    0x7B, 0x04, 0x14,  // start | type=BASIC_CONFIG | data_len=20
+    0x0E, 0x42,        // cell_full_voltage        = 3650/1000 = 3.650 V  (reg 0x10)
+    0x0B, 0xB8,        // cell_cutoff_voltage      = 3000/1000 = 3.000 V  (reg 0x11)
+    0x0D, 0x16,        // balance_open_voltage     = 3350/1000 = 3.350 V  (reg 0x12)
+    0x00, 0x0A,        // balance_open_voltage_diff=   10/1000 = 0.010 V  (reg 0x13)
+    0x00, 0x00,        // unknown                  = 0                    (reg 0x14)
+    0x00, 0x64,        // unknown                  = 100/100  = 1.00      (reg 0x15)
+    0x0D, 0x7A,        // soc_80_voltage           = 3450/1000 = 3.450 V  (reg 0x16)
+    0x0D, 0x34,        // soc_60_voltage           = 3380/1000 = 3.380 V  (reg 0x17)
+    0x0C, 0xF8,        // soc_40_voltage           = 3320/1000 = 3.320 V  (reg 0x18)
+    0x0C, 0xB2,        // soc_20_voltage           = 3250/1000 = 3.250 V  (reg 0x19)
+    0x7D,
+};
+
+// BL-250-100-100-2: cell_full=3.500V  cell_cutoff=2.500V  bal_open=3.450V  bal_diff=0.300V
+// all SoC voltages = 0 (not configured on this device)
+static const std::vector<uint8_t> BASIC_CONFIG_FRAME_2 = {
+    0x7B, 0x04, 0x14,  // start | type=BASIC_CONFIG | data_len=20
+    0x0D, 0xAC,        // cell_full_voltage        = 3500/1000 = 3.500 V  (reg 0x10)
+    0x09, 0xC4,        // cell_cutoff_voltage      = 2500/1000 = 2.500 V  (reg 0x11)
+    0x0D, 0x7A,        // balance_open_voltage     = 3450/1000 = 3.450 V  (reg 0x12)
+    0x01, 0x2C,        // balance_open_voltage_diff=  300/1000 = 0.300 V  (reg 0x13)
+    0x00, 0x00,        // unknown                  = 0                    (reg 0x14)
+    0x00, 0x00,        // unknown                  = 0                    (reg 0x15)
+    0x00, 0x00,        // soc_80_voltage           = 0.000 V              (reg 0x16)
+    0x00, 0x00,        // soc_60_voltage           = 0.000 V              (reg 0x17)
+    0x00, 0x00,        // soc_40_voltage           = 0.000 V              (reg 0x18)
+    0x00, 0x00,        // soc_20_voltage           = 0.000 V              (reg 0x19)
+    0x7D,
+};
+
+// Wrong length byte - must be rejected by the guard in decode_basic_config_data_
+static const std::vector<uint8_t> BASIC_CONFIG_FRAME_INVALID_LEN = {
+    0x7B, 0x04, 0x1A,  // length 0x1A != 0x14 → guard rejects
+    0x0E, 0x42, 0x0B, 0xB8, 0x0D, 0x16, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7D,
+};
+
+// Invalid frames (from tests/esp32-ble-example-debug.yaml - used to test rejection logic)
 static const std::vector<uint8_t> INVALID_FRAME_NO_END = {0x7B, 0xF5, 0x02, 0x02, 0x39};
 static const std::vector<uint8_t> INVALID_FRAME_TOO_SHORT = {0x7B, 0xF5, 0x02, 0x02, 0x7D};
 static const std::vector<uint8_t> INVALID_FRAME_TOO_LONG = {0x7B, 0xF5, 0x02, 0x02, 0x39, 0x39, 0x7D};

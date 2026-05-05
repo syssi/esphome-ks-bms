@@ -32,17 +32,33 @@ static const uint8_t KS_FRAME_TYPE_MANUFACTURING_DATE = 0x09;
 static const uint8_t KS_FRAME_TYPE_MODEL_NAME = 0x0A;
 static const uint8_t KS_FRAME_TYPE_SERIAL_NUMBER = 0x0B;
 static const uint8_t KS_FRAME_TYPE_MODEL_TYPE = 0x0C;
+static const uint8_t KS_FRAME_TYPE_BASIC_CONFIG = 0x04;
+static const uint8_t KS_FRAME_TYPE_VOLTAGE_PROTECTION = 0x05;
+static const uint8_t KS_FRAME_TYPE_TEMPERATURE_PROTECTION = 0x06;
+static const uint8_t KS_FRAME_TYPE_CURRENT_PROTECTION = 0x07;
 static const uint8_t KS_FRAME_TYPE_STATUS_BITMASK = 0x64;  // No response
 static const uint8_t KS_FRAME_TYPE_BLUETOOTH_SOFTWARE_VERSION = 0x74;
-static const uint8_t KS_FRAME_TYPE_SOFTWARE_VERSION = 0xF3;  // No response
+static const uint8_t KS_FRAME_TYPE_SOFTWARE_VERSION = 0xF3;
 static const uint8_t KS_FRAME_TYPE_HARDWARE_VERSION = 0xF4;
 static const uint8_t KS_FRAME_TYPE_BOOTLOADER_VERSION = 0xF5;
 
-static const uint8_t KS_COMMAND_QUEUE_SIZE = 9;
+static const uint8_t KS_COMMAND_QUEUE_SIZE = 15;
 static const uint8_t KS_COMMAND_QUEUE[KS_COMMAND_QUEUE_SIZE] = {
-    KS_FRAME_TYPE_CELL_VOLTAGES,      KS_FRAME_TYPE_TEMPERATURES,     KS_FRAME_TYPE_HISTORY,
-    KS_FRAME_TYPE_MANUFACTURING_DATE, KS_FRAME_TYPE_MODEL_NAME,       KS_FRAME_TYPE_SERIAL_NUMBER,
-    KS_FRAME_TYPE_MODEL_TYPE,         KS_FRAME_TYPE_HARDWARE_VERSION, KS_FRAME_TYPE_BOOTLOADER_VERSION,
+    KS_FRAME_TYPE_CELL_VOLTAGES,
+    KS_FRAME_TYPE_TEMPERATURES,
+    KS_FRAME_TYPE_HISTORY,
+    KS_FRAME_TYPE_MANUFACTURING_DATE,
+    KS_FRAME_TYPE_MODEL_NAME,
+    KS_FRAME_TYPE_SERIAL_NUMBER,
+    KS_FRAME_TYPE_MODEL_TYPE,
+    KS_FRAME_TYPE_HARDWARE_VERSION,
+    KS_FRAME_TYPE_BOOTLOADER_VERSION,
+    KS_FRAME_TYPE_BLUETOOTH_SOFTWARE_VERSION,
+    KS_FRAME_TYPE_SOFTWARE_VERSION,
+    KS_FRAME_TYPE_BASIC_CONFIG,
+    KS_FRAME_TYPE_VOLTAGE_PROTECTION,
+    KS_FRAME_TYPE_TEMPERATURE_PROTECTION,
+    KS_FRAME_TYPE_CURRENT_PROTECTION,
 };
 
 static const uint8_t ERRORS_SIZE = 16;
@@ -234,6 +250,18 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     case KS_FRAME_TYPE_BOOTLOADER_VERSION:
       this->decode_bootloader_version_data_(data);
       break;
+    case KS_FRAME_TYPE_BASIC_CONFIG:
+      this->decode_basic_config_data_(data);
+      break;
+    case KS_FRAME_TYPE_VOLTAGE_PROTECTION:
+      this->decode_voltage_protection_data_(data);
+      break;
+    case KS_FRAME_TYPE_TEMPERATURE_PROTECTION:
+      this->decode_temperature_protection_data_(data);
+      break;
+    case KS_FRAME_TYPE_CURRENT_PROTECTION:
+      this->decode_current_protection_data_(data);
+      break;
     case KS_FRAME_TYPE_HISTORY:
       ESP_LOGD(TAG, "History frame received (ignored): %s",
                format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
@@ -287,12 +315,14 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
 
   // 17    2  0x75 0x30    Full capacity
   this->publish_state_(this->full_charge_capacity_sensor_, ks_get_16bit(17) * 0.01f);
+  this->publish_state_(this->full_charge_capacity_number_, ks_get_16bit(17) * 0.01f);
 
   // 19    2  0x75 0x30    Nominal capacity
   this->publish_state_(this->nominal_capacity_sensor_, ks_get_16bit(19) * 0.01f);
+  this->publish_state_(this->nominal_capacity_number_, ks_get_16bit(19) * 0.01f);
 
-  // 21    2  0x00 0x00    Unknown
-  ESP_LOGD(TAG, "Unknown21: %d (0x%02X 0x%02X)", ks_get_16bit(21), data[21], data[22]);
+  // 21    2               Cycle capacity
+  this->publish_state_(this->cycle_capacity_number_, ks_get_16bit(21) * 0.01f);
 
   // 23    2  0x00 0x01    Number of cycles
   this->publish_state_(this->charging_cycles_sensor_, ks_get_16bit(23) * 1.0f);
@@ -320,6 +350,8 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   uint16_t fet_control_status = ks_get_16bit(29);
   this->publish_state_(this->charging_binary_sensor_, check_bit_(fet_control_status, 4));
   this->publish_state_(this->discharging_binary_sensor_, check_bit_(fet_control_status, 8));
+  this->publish_state_(this->limiting_current_binary_sensor_,
+                       check_bit_(fet_control_status, 16) || check_bit_(fet_control_status, 32));
   this->publish_state_(this->charging_switch_, check_bit_(fet_control_status, 4));
   this->publish_state_(this->discharging_switch_, check_bit_(fet_control_status, 8));
   this->publish_state_(this->balancer_status_text_sensor_,
@@ -345,13 +377,160 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   uint16_t error_bitmask = ks_get_16bit(31);
   this->publish_state_(this->error_bitmask_sensor_, error_bitmask);
   this->publish_state_(this->errors_text_sensor_, this->bitmask_to_string_(ERRORS, ERRORS_SIZE, error_bitmask));
+  this->publish_state_(this->voltage_protection_bitmask_sensor_, error_bitmask & 0x000C);
+  this->publish_state_(this->voltage_protection_text_sensor_,
+                       this->bitmask_to_string_(ERRORS, ERRORS_SIZE, error_bitmask & 0x000C));
+  this->publish_state_(this->temperature_protection_bitmask_sensor_, error_bitmask & 0x00F0);
+  this->publish_state_(this->temperature_protection_text_sensor_,
+                       this->bitmask_to_string_(ERRORS, ERRORS_SIZE, error_bitmask & 0x00F0));
+  this->publish_state_(this->current_protection_bitmask_sensor_, error_bitmask & 0x0703);
+  this->publish_state_(this->current_protection_text_sensor_,
+                       this->bitmask_to_string_(ERRORS, ERRORS_SIZE, error_bitmask & 0x0703));
 
   // 33    2  0x00 0x64    State of Health (if available)
-  if (data[2] > 19) {
+  if (data.size() > 34) {
     this->publish_state_(this->state_of_health_sensor_, ks_get_16bit(33) * 1.0f);
   }
 
   // 34    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_basic_config_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Basic config frame received");
+  ESP_LOGI(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+
+  // Layout: 10 values, length 0x14 = 20, total frame 24 bytes
+  //
+  // Byte Len  Description              Register  Factor
+  //  3    2   Cell full voltage        0x10      ÷1000 V
+  //  5    2   Cell cutoff voltage      0x11      ÷1000 V
+  //  7    2   Balance open voltage     0x12      ÷1000 V
+  //  9    2   Balance open volt diff   0x13      ÷1000 V
+  // 11    2   Unknown                  0x14      integer
+  // 13    2   Unknown                  0x15      ÷100
+  // 15    2   SoC 80% voltage          0x16      ÷1000 V
+  // 17    2   SoC 60% voltage          0x17      ÷1000 V
+  // 19    2   SoC 40% voltage          0x18      ÷1000 V
+  // 21    2   SoC 20% voltage          0x19      ÷1000 V
+  // 23    1   End of frame             0x7D
+
+  const uint8_t data_len = data[2];
+  if (data_len != 0x14) {
+    ESP_LOGW(TAG, "Unexpected basic config frame length: 0x%02X -- raw: %s", data_len,
+             format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+    return;
+  }
+
+  // Register 0x10: Cell full voltage (÷1000 V)
+  this->publish_state_(this->cell_full_voltage_number_, ks_get_16bit(3) * 0.001f);
+  // Register 0x11: Cell cutoff voltage (÷1000 V)
+  this->publish_state_(this->cell_cutoff_voltage_number_, ks_get_16bit(5) * 0.001f);
+  // Register 0x12: Balance open voltage (÷1000 V)
+  this->publish_state_(this->balance_open_voltage_number_, ks_get_16bit(7) * 0.001f);
+  // Register 0x13: Balance open voltage diff (÷1000 V)
+  this->publish_state_(this->balance_open_voltage_diff_number_, ks_get_16bit(9) * 0.001f);
+  // Register 0x14: Unknown (integer)
+  ESP_LOGD(TAG, "  Unknown reg 0x14: %d", ks_get_16bit(11));
+  // Register 0x15: Unknown (÷100)
+  ESP_LOGD(TAG, "  Unknown reg 0x15: %.2f", ks_get_16bit(13) * 0.01f);
+  // Register 0x16: SoC 80% voltage (÷1000 V)
+  this->publish_state_(this->soc_80_voltage_number_, ks_get_16bit(15) * 0.001f);
+  // Register 0x17: SoC 60% voltage (÷1000 V)
+  this->publish_state_(this->soc_60_voltage_number_, ks_get_16bit(17) * 0.001f);
+  // Register 0x18: SoC 40% voltage (÷1000 V)
+  this->publish_state_(this->soc_40_voltage_number_, ks_get_16bit(19) * 0.001f);
+  // Register 0x19: SoC 20% voltage (÷1000 V)
+  this->publish_state_(this->soc_20_voltage_number_, ks_get_16bit(21) * 0.001f);
+}
+
+void KsBmsBle::decode_voltage_protection_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Voltage protection frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+
+  // Byte Len  Description
+  //  3    2   Cell overvoltage protection      (÷1000 V)
+  this->publish_state_(this->cell_overvoltage_protection_number_, ks_get_16bit(3) * 0.001f);
+  //  5    2   Cell overvoltage recovery        (÷1000 V)
+  this->publish_state_(this->cell_overvoltage_recovery_number_, ks_get_16bit(5) * 0.001f);
+  //  7    2   Cell overvoltage protection delay (÷1000 s)
+  this->publish_state_(this->cell_overvoltage_protection_delay_number_, ks_get_16bit(7) * 0.001f);
+  //  9    2   Cell undervoltage protection     (÷1000 V)
+  this->publish_state_(this->cell_undervoltage_protection_number_, ks_get_16bit(9) * 0.001f);
+  // 11    2   Cell undervoltage recovery       (÷1000 V)
+  this->publish_state_(this->cell_undervoltage_recovery_number_, ks_get_16bit(11) * 0.001f);
+  // 13    2   Cell undervoltage protection delay (÷1000 s)
+  this->publish_state_(this->cell_undervoltage_protection_delay_number_, ks_get_16bit(13) * 0.001f);
+  // 15    2   Pack overvoltage protection      (÷100 V)
+  this->publish_state_(this->pack_overvoltage_protection_number_, ks_get_16bit(15) * 0.01f);
+  // 17    2   Pack overvoltage recovery        (÷100 V)
+  this->publish_state_(this->pack_overvoltage_recovery_number_, ks_get_16bit(17) * 0.01f);
+  // 19    2   Pack overvoltage protection delay (÷1000 s)
+  this->publish_state_(this->pack_overvoltage_protection_delay_number_, ks_get_16bit(19) * 0.001f);
+  // 21    2   Pack undervoltage protection     (÷100 V)
+  this->publish_state_(this->pack_undervoltage_protection_number_, ks_get_16bit(21) * 0.01f);
+  // 23    2   Pack undervoltage recovery       (÷100 V)
+  this->publish_state_(this->pack_undervoltage_recovery_number_, ks_get_16bit(23) * 0.01f);
+  // 25    2   Pack undervoltage protection delay (÷1000 s)
+  this->publish_state_(this->pack_undervoltage_protection_delay_number_, ks_get_16bit(25) * 0.001f);
+}
+
+void KsBmsBle::decode_temperature_protection_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Temperature protection frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+
+  // Byte Len  Description
+  // Temperature encoding: raw = °C × 10 + 2731  →  °C = (raw - 2731) / 10
+  //  3    2   Charge overtemperature protection  (Kelvin×10 → °C)
+  this->publish_state_(this->charge_overtemperature_protection_number_, (ks_get_16bit(3) - 2731) * 0.1f);
+  //  5    2   Charge overtemperature recovery    (Kelvin×10 → °C)
+  this->publish_state_(this->charge_overtemperature_recovery_number_, (ks_get_16bit(5) - 2731) * 0.1f);
+  //  7    2   Charge overtemperature protection delay (÷1000 s)
+  this->publish_state_(this->charge_overtemperature_protection_delay_number_, ks_get_16bit(7) * 0.001f);
+  //  9    2   Charge undertemperature protection (Kelvin×10 → °C)
+  this->publish_state_(this->charge_undertemperature_protection_number_, (ks_get_16bit(9) - 2731) * 0.1f);
+  // 11    2   Charge undertemperature recovery   (Kelvin×10 → °C)
+  this->publish_state_(this->charge_undertemperature_recovery_number_, (ks_get_16bit(11) - 2731) * 0.1f);
+  // 13    2   Charge undertemperature protection delay (÷1000 s)
+  this->publish_state_(this->charge_undertemperature_protection_delay_number_, ks_get_16bit(13) * 0.001f);
+  // 15    2   Discharge overtemperature protection (Kelvin×10 → °C)
+  this->publish_state_(this->discharge_overtemperature_protection_number_, (ks_get_16bit(15) - 2731) * 0.1f);
+  // 17    2   Discharge overtemperature recovery   (Kelvin×10 → °C)
+  this->publish_state_(this->discharge_overtemperature_recovery_number_, (ks_get_16bit(17) - 2731) * 0.1f);
+  // 19    2   Discharge overtemperature protection delay (÷1000 s)
+  this->publish_state_(this->discharge_overtemperature_protection_delay_number_, ks_get_16bit(19) * 0.001f);
+  // 21    2   Discharge undertemperature protection (Kelvin×10 → °C)
+  this->publish_state_(this->discharge_undertemperature_protection_number_, (ks_get_16bit(21) - 2731) * 0.1f);
+  // 23    2   Discharge undertemperature recovery   (Kelvin×10 → °C)
+  this->publish_state_(this->discharge_undertemperature_recovery_number_, (ks_get_16bit(23) - 2731) * 0.1f);
+  // 25    2   Discharge undertemperature protection delay (÷1000 s)
+  this->publish_state_(this->discharge_undertemperature_protection_delay_number_, ks_get_16bit(25) * 0.001f);
+}
+
+void KsBmsBle::decode_current_protection_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "Current protection frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+
+  // Byte Len  Description
+  //  3    2   Charge overcurrent protection      (÷100 A)
+  this->publish_state_(this->charge_overcurrent_protection_number_, ks_get_16bit(3) * 0.01f);
+  //  5    2   Charge overcurrent protection delay (÷1000 s)
+  this->publish_state_(this->charge_overcurrent_protection_delay_number_, ks_get_16bit(5) * 0.001f);
+  //  7    2   Charge overcurrent recovery delay  (÷100 s)
+  this->publish_state_(this->charge_overcurrent_recovery_delay_number_, ks_get_16bit(7) * 0.01f);
+  //  9    2   Discharge overcurrent protection   (÷100 A)
+  this->publish_state_(this->discharge_overcurrent_protection_number_, ks_get_16bit(9) * 0.01f);
+  // 11    2   Discharge overcurrent protection delay (÷1000 s)
+  this->publish_state_(this->discharge_overcurrent_protection_delay_number_, ks_get_16bit(11) * 0.001f);
+  // 13    2   Discharge overcurrent recovery delay (÷100 s)
+  this->publish_state_(this->discharge_overcurrent_recovery_delay_number_, ks_get_16bit(13) * 0.01f);
 }
 
 void KsBmsBle::decode_cell_voltages_data_(const std::vector<uint8_t> &data) {
@@ -463,10 +642,12 @@ void KsBmsBle::decode_manufacturing_date_data_(const std::vector<uint8_t> &data)
   //  4    1  0xFF         Month
   //  5    1  0xFF         Day
   if (data[3] == 0xff && data[4] == 0xff && data[5] == 0xff) {
-    ESP_LOGI(TAG, "Manufacturing date: unset");
-  } else {
-    ESP_LOGI(TAG, "Manufacturing date: %d.%d.%d", data[3] + 2000, data[4], data[5]);
+    this->publish_state_(this->manufacturing_date_text_sensor_, "Unset");
+    return;
   }
+  char date_buf[11];
+  snprintf(date_buf, sizeof(date_buf), "%04d-%02d-%02d", data[3] + 2000, data[4], data[5]);
+  this->publish_state_(this->manufacturing_date_text_sensor_, date_buf);
 
   //  6    1  0x7D         End of frame
 }
@@ -482,11 +663,12 @@ void KsBmsBle::decode_model_name_data_(const std::vector<uint8_t> &data) {
   //  3   30  0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF         Model name
   //          0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
   //          0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
-  if (data[3] == 0xff && data[4] == 0xff && data[31] == 0xff && data[32] == 0xff) {
-    ESP_LOGI(TAG, "Model name: unset");
-  } else {
-    ESP_LOGI(TAG, "Model name: %s", std::string(data.begin() + 3, data.begin() + 3 + 30).c_str());
+  const uint8_t len = data[2];
+  if (len == 0 || data[3] == 0xff) {
+    this->publish_state_(this->device_model_text_sensor_, "Unset");
+    return;
   }
+  this->publish_state_(this->device_model_text_sensor_, std::string(data.begin() + 3, data.begin() + 3 + len));
 
   //  33    1  0x7D         End of frame
 }
@@ -501,11 +683,13 @@ void KsBmsBle::decode_serial_number_data_(const std::vector<uint8_t> &data) {
   //  2    1  0x13         Data length
   //  3   19  0x43 0x45 0x52 0x32 0x34 0x31 0x30 0x2D 0x30 0x31         Serial number
   //          0x38 0x2D 0x30 0x33 0x30 0x2D 0x30 0x32 0x33
-  if (data[3] == 0xff && data[4] == 0xff && data[14] == 0xff && data[15] == 0xff) {
-    ESP_LOGI(TAG, "Serial number: unset");
-  } else {
-    ESP_LOGI(TAG, "Serial number: %s", std::string(data.begin() + 3, data.begin() + 3 + 19).c_str());
+  //  16   1  0x7D         End of frame
+  const uint8_t len = data[2];
+  if (len == 0 || data[3] == 0xff) {
+    this->publish_state_(this->serial_number_text_sensor_, "Unset");
+    return;
   }
+  this->publish_state_(this->serial_number_text_sensor_, std::string(data.begin() + 3, data.begin() + 3 + len));
 
   //  16   1  0x7D         End of frame
 }
@@ -520,11 +704,12 @@ void KsBmsBle::decode_model_type_data_(const std::vector<uint8_t> &data) {
   //  2    1  0x14
   //  3   20  0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF         Model type
   //          0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
-  if (data[3] == 0xff && data[4] == 0xff && data[21] == 0xff && data[22] == 0xff) {
-    ESP_LOGI(TAG, "Model type: unset");
-  } else {
-    ESP_LOGI(TAG, "Model type: %s", std::string(data.begin() + 3, data.begin() + 3 + 20).c_str());
+  const uint8_t len = data[2];
+  if (len == 0 || data[3] == 0xff) {
+    this->publish_state_(this->model_type_text_sensor_, "Unset");
+    return;
   }
+  this->publish_state_(this->model_type_text_sensor_, std::string(data.begin() + 3, data.begin() + 3 + len));
 
   // 23    1  0x7D         End of frame
 }
@@ -540,11 +725,13 @@ void KsBmsBle::decode_bluetooth_software_version_data_(const std::vector<uint8_t
   //  3   24  0x4B 0x53 0x5F 0x42 0x4C 0x45 0x5F 0x56 0x65 0x72
   //          0x31 0x2E 0x30 0x2E 0x30 0x5F 0x32 0x30 0x32 0x34
   //          0x30 0x37 0x31 0x36
-  if (data[3] == 0xff && data[4] == 0xff && data[25] == 0xff && data[26] == 0xff) {
-    ESP_LOGI(TAG, "Bluetooth software version: unset");
-  } else {
-    ESP_LOGI(TAG, "Bluetooth software version: %s", std::string(data.begin() + 3, data.begin() + 3 + 24).c_str());
+  const uint8_t len = data[2];
+  if (len == 0 || data[3] == 0xff) {
+    this->publish_state_(this->bluetooth_software_version_text_sensor_, "Unset");
+    return;
   }
+  this->publish_state_(this->bluetooth_software_version_text_sensor_,
+                       std::string(data.begin() + 3, data.begin() + 3 + len));
 
   // 27    1  0x7D         End of frame
 }
@@ -559,7 +746,9 @@ void KsBmsBle::decode_software_version_data_(const std::vector<uint8_t> &data) {
   //  2    1  0x02         Data length
   //  3    1  0x00         Main version
   //  4    1  0x00         Sub version
-  ESP_LOGI(TAG, "Software version: %d.%d", data[3], data[4]);
+  char buf[8];
+  snprintf(buf, sizeof(buf), "%d.%d", data[3], data[4]);
+  this->publish_state_(this->software_version_text_sensor_, buf);
 
   //  5    1  0x7D         End of frame
 }
@@ -575,7 +764,9 @@ void KsBmsBle::decode_hardware_version_data_(const std::vector<uint8_t> &data) {
   //  3    1  0x02         Main version
   //  4    1  0x02         Sub version
   //  5    1  0x01         Build version
-  ESP_LOGI(TAG, "Hardware version: %d.%d.%d", data[3], data[4], data[5]);
+  char buf[12];
+  snprintf(buf, sizeof(buf), "%d.%d.%d", data[3], data[4], data[5]);
+  this->publish_state_(this->hardware_version_text_sensor_, buf);
 
   //  6    1  0x7D         End of frame
 }
@@ -590,7 +781,9 @@ void KsBmsBle::decode_bootloader_version_data_(const std::vector<uint8_t> &data)
   //  2    1  0x02         Data length
   //  3    1  0x02         Main version
   //  4    1  0x39         Sub version
-  ESP_LOGI(TAG, "Bootloader version: %d.%d", data[3], data[4]);
+  char buf[8];
+  snprintf(buf, sizeof(buf), "%d.%d", data[3], data[4]);
+  this->publish_state_(this->bootloader_version_text_sensor_, buf);
 
   //  5    1  0x7D         End of frame
 }
@@ -668,6 +861,12 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Error bitmask", this->error_bitmask_sensor_);
 
   LOG_TEXT_SENSOR("", "Software Version", this->software_version_text_sensor_);
+  LOG_TEXT_SENSOR("", "Hardware Version", this->hardware_version_text_sensor_);
+  LOG_TEXT_SENSOR("", "Bootloader Version", this->bootloader_version_text_sensor_);
+  LOG_TEXT_SENSOR("", "Serial Number", this->serial_number_text_sensor_);
+  LOG_TEXT_SENSOR("", "Manufacturing Date", this->manufacturing_date_text_sensor_);
+  LOG_TEXT_SENSOR("", "Model Type", this->model_type_text_sensor_);
+  LOG_TEXT_SENSOR("", "Bluetooth Software Version", this->bluetooth_software_version_text_sensor_);
   LOG_TEXT_SENSOR("", "Device Model", this->device_model_text_sensor_);
   LOG_TEXT_SENSOR("", "Voltage protection", this->voltage_protection_text_sensor_);
   LOG_TEXT_SENSOR("", "Current protection", this->current_protection_text_sensor_);
@@ -688,6 +887,13 @@ void KsBmsBle::publish_state_(sensor::Sensor *sensor, float value) {
     return;
 
   sensor->publish_state(value);
+}
+
+void KsBmsBle::publish_state_(number::Number *obj, float value) {
+  if (obj == nullptr)
+    return;
+
+  obj->publish_state(value);
 }
 
 void KsBmsBle::publish_state_(switch_::Switch *obj, const bool &state) {

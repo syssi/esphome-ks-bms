@@ -165,6 +165,92 @@ sensor:
     cell_voltage_16:
       name: "cell voltage 16"
 
+number:
+  - platform: ks_bms_ble
+    ks_bms_ble_id: bms0
+    cell_full_voltage:
+      name: "cell full voltage"
+    cell_cutoff_voltage:
+      name: "cell cutoff voltage"
+    balance_open_voltage:
+      name: "balance open voltage"
+    balance_open_voltage_diff:
+      name: "balance open voltage diff"
+    soc_80_voltage:
+      name: "soc 80 voltage"
+    soc_60_voltage:
+      name: "soc 60 voltage"
+    soc_40_voltage:
+      name: "soc 40 voltage"
+    soc_20_voltage:
+      name: "soc 20 voltage"
+    nominal_capacity:
+      name: "nominal capacity"
+    cycle_capacity:
+      name: "cycle capacity"
+    full_charge_capacity:
+      name: "full charge capacity"
+    cell_overvoltage_protection:
+      name: "cell overvoltage protection"
+    cell_overvoltage_recovery:
+      name: "cell overvoltage recovery"
+    cell_overvoltage_protection_delay:
+      name: "cell overvoltage protection delay"
+    cell_undervoltage_protection:
+      name: "cell undervoltage protection"
+    cell_undervoltage_recovery:
+      name: "cell undervoltage recovery"
+    cell_undervoltage_protection_delay:
+      name: "cell undervoltage protection delay"
+    pack_overvoltage_protection:
+      name: "pack overvoltage protection"
+    pack_overvoltage_recovery:
+      name: "pack overvoltage recovery"
+    pack_overvoltage_protection_delay:
+      name: "pack overvoltage protection delay"
+    pack_undervoltage_protection:
+      name: "pack undervoltage protection"
+    pack_undervoltage_recovery:
+      name: "pack undervoltage recovery"
+    pack_undervoltage_protection_delay:
+      name: "pack undervoltage protection delay"
+    charge_overtemperature_protection:
+      name: "charge overtemperature protection"
+    charge_overtemperature_recovery:
+      name: "charge overtemperature recovery"
+    charge_overtemperature_protection_delay:
+      name: "charge overtemperature protection delay"
+    charge_undertemperature_protection:
+      name: "charge undertemperature protection"
+    charge_undertemperature_recovery:
+      name: "charge undertemperature recovery"
+    charge_undertemperature_protection_delay:
+      name: "charge undertemperature protection delay"
+    discharge_overtemperature_protection:
+      name: "discharge overtemperature protection"
+    discharge_overtemperature_recovery:
+      name: "discharge overtemperature recovery"
+    discharge_overtemperature_protection_delay:
+      name: "discharge overtemperature protection delay"
+    discharge_undertemperature_protection:
+      name: "discharge undertemperature protection"
+    discharge_undertemperature_recovery:
+      name: "discharge undertemperature recovery"
+    discharge_undertemperature_protection_delay:
+      name: "discharge undertemperature protection delay"
+    charge_overcurrent_protection:
+      name: "charge overcurrent protection"
+    charge_overcurrent_protection_delay:
+      name: "charge overcurrent protection delay"
+    charge_overcurrent_recovery_delay:
+      name: "charge overcurrent recovery delay"
+    discharge_overcurrent_protection:
+      name: "discharge overcurrent protection"
+    discharge_overcurrent_protection_delay:
+      name: "discharge overcurrent protection delay"
+    discharge_overcurrent_recovery_delay:
+      name: "discharge overcurrent recovery delay"
+
 switch:
   - platform: ble_client
     ble_client_id: client0
@@ -182,6 +268,18 @@ text_sensor:
     ks_bms_ble_id: bms0
     software_version:
       name: "software version"
+    hardware_version:
+      name: "hardware version"
+    bootloader_version:
+      name: "bootloader version"
+    serial_number:
+      name: "serial number"
+    manufacturing_date:
+      name: "manufacturing date"
+    model_type:
+      name: "model type"
+    bluetooth_software_version:
+      name: "bluetooth software version"
     device_model:
       name: "device model"
     voltage_protection:
