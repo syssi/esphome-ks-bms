@@ -8,17 +8,18 @@ namespace esphome::ks_bms_ble::testing {
 // Exposes protected decoder methods for direct testing.
 class TestableKsBmsBle : public KsBmsBle {
  public:
+  using KsBmsBle::decode_basic_config_data_;
   using KsBmsBle::decode_bluetooth_software_version_data_;
   using KsBmsBle::decode_bootloader_version_data_;
   using KsBmsBle::decode_cell_voltages_data_;
   using KsBmsBle::decode_current_protection_data_;
   using KsBmsBle::decode_hardware_version_data_;
+  using KsBmsBle::decode_history_data_;
   using KsBmsBle::decode_manufacturing_date_data_;
   using KsBmsBle::decode_model_name_data_;
   using KsBmsBle::decode_model_type_data_;
   using KsBmsBle::decode_serial_number_data_;
   using KsBmsBle::decode_software_version_data_;
-  using KsBmsBle::decode_basic_config_data_;
   using KsBmsBle::decode_status_data_;
   using KsBmsBle::decode_temperatures_data_;
   using KsBmsBle::decode_temperature_protection_data_;
@@ -339,6 +340,58 @@ static const std::vector<uint8_t> BASIC_CONFIG_FRAME_INVALID_LEN = {
     0x7B, 0x04, 0x1A,  // length 0x1A != 0x14 → guard rejects
     0x0E, 0x42, 0x0B, 0xB8, 0x0D, 0x16, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7D,
+};
+
+// ── History frame (0x08) ─────────────────────────────────────────────────────
+// Real frame from logs (all counters zero = no protection events yet)
+static const std::vector<uint8_t> HISTORY_FRAME_ALL_ZEROS = {
+    0x7B, 0x08, 0x16,  // start | type=HISTORY | data_len=22
+    0x00, 0x00,        // scpt  short_circuit_protection_count        = 0
+    0x00, 0x00,        // cot   charge_overcurrent_protection_count   = 0
+    0x00, 0x00,        // dot   discharge_overcurrent_protection_count = 0
+    0x00, 0x00,        // otom  cell_overvoltage_protection_count      = 0
+    0x00, 0x00,        // tomu  charge_undercurrent_protection_count  = 0
+    0x00, 0x00,        // oot   pack_overvoltage_protection_count     = 0
+    0x00, 0x00,        // out   pack_undervoltage_protection_count    = 0
+    0x00, 0x00,        // chtt  charge_overtemperature_protection_count  = 0
+    0x00, 0x00,        // ltct  charge_undertemperature_protection_count = 0
+    0x00, 0x00,        // htdt  discharge_overtemperature_protection_count  = 0
+    0x00, 0x00,        // ltdt  discharge_undertemperature_protection_count = 0
+    0x7D,
+};
+
+// Real frame from device: scpt=1 cot=1 dot=1 otom=2 tomu=2, rest=0
+static const std::vector<uint8_t> HISTORY_FRAME_1 = {
+    0x7B, 0x08, 0x16,  // start | type=HISTORY | data_len=22
+    0x00, 0x01,        // scpt  short_circuit_protection_count        = 1
+    0x00, 0x01,        // cot   charge_overcurrent_protection_count   = 1
+    0x00, 0x01,        // dot   discharge_overcurrent_protection_count = 1
+    0x00, 0x02,        // otom  cell_overvoltage_protection_count      = 2
+    0x00, 0x02,        // tomu  charge_undercurrent_protection_count  = 2
+    0x00, 0x00,        // oot   pack_overvoltage_protection_count     = 0
+    0x00, 0x00,        // out   pack_undervoltage_protection_count    = 0
+    0x00, 0x00,        // chtt  charge_overtemperature_protection_count  = 0
+    0x00, 0x00,        // ltct  charge_undertemperature_protection_count = 0
+    0x00, 0x00,        // htdt  discharge_overtemperature_protection_count  = 0
+    0x00, 0x00,        // ltdt  discharge_undertemperature_protection_count = 0
+    0x7D,
+};
+
+// Real frame from device: scpt=0 cot=1 dot=1 otom=105 tomu=1 out=1, rest=0
+static const std::vector<uint8_t> HISTORY_FRAME_2 = {
+    0x7B, 0x08, 0x16,  // start | type=HISTORY | data_len=22
+    0x00, 0x00,        // scpt  short_circuit_protection_count        = 0
+    0x00, 0x01,        // cot   charge_overcurrent_protection_count   = 1
+    0x00, 0x01,        // dot   discharge_overcurrent_protection_count = 1
+    0x00, 0x69,        // otom  cell_overvoltage_protection_count      = 105
+    0x00, 0x01,        // tomu  charge_undercurrent_protection_count  = 1
+    0x00, 0x00,        // oot   pack_overvoltage_protection_count     = 0
+    0x00, 0x01,        // out   pack_undervoltage_protection_count    = 1
+    0x00, 0x00,        // chtt  charge_overtemperature_protection_count  = 0
+    0x00, 0x00,        // ltct  charge_undertemperature_protection_count = 0
+    0x00, 0x00,        // htdt  discharge_overtemperature_protection_count  = 0
+    0x00, 0x00,        // ltdt  discharge_undertemperature_protection_count = 0
+    0x7D,
 };
 
 // Invalid frames (from tests/esp32-ble-example-debug.yaml - used to test rejection logic)

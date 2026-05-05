@@ -53,6 +53,24 @@ CONF_STATE_OF_HEALTH = "state_of_health"
 CONF_BALANCED_CELL = "balanced_cell"
 CONF_BALANCED_CELL_BITMASK = "balanced_cell_bitmask"
 
+CONF_SHORT_CIRCUIT_PROTECTION_COUNT = "short_circuit_protection_count"
+CONF_CHARGE_OVERCURRENT_PROTECTION_COUNT = "charge_overcurrent_protection_count"
+CONF_DISCHARGE_OVERCURRENT_PROTECTION_COUNT = "discharge_overcurrent_protection_count"
+CONF_CELL_OVERVOLTAGE_PROTECTION_COUNT = "cell_overvoltage_protection_count"
+CONF_CHARGE_UNDERCURRENT_PROTECTION_COUNT = "charge_undercurrent_protection_count"
+CONF_PACK_OVERVOLTAGE_PROTECTION_COUNT = "pack_overvoltage_protection_count"
+CONF_PACK_UNDERVOLTAGE_PROTECTION_COUNT = "pack_undervoltage_protection_count"
+CONF_CHARGE_OVERTEMPERATURE_PROTECTION_COUNT = "charge_overtemperature_protection_count"
+CONF_CHARGE_UNDERTEMPERATURE_PROTECTION_COUNT = (
+    "charge_undertemperature_protection_count"
+)
+CONF_DISCHARGE_OVERTEMPERATURE_PROTECTION_COUNT = (
+    "discharge_overtemperature_protection_count"
+)
+CONF_DISCHARGE_UNDERTEMPERATURE_PROTECTION_COUNT = (
+    "discharge_undertemperature_protection_count"
+)
+
 CONF_AVERAGE_TEMPERATURE = "average_temperature"
 CONF_AMBIENT_TEMPERATURE = "ambient_temperature"
 CONF_MOSFET_TEMPERATURE = "mosfet_temperature"
@@ -73,6 +91,7 @@ ICON_ERROR_BITMASK = "mdi:alert-circle-outline"
 ICON_STATE_OF_HEALTH = "mdi:heart-flash"
 ICON_BALANCED_CELL = "mdi:battery-sync"
 ICON_BALANCED_CELL_BITMASK = "mdi:battery-sync-outline"
+ICON_PROTECTION_COUNT = "mdi:counter"
 
 UNIT_AMPERE_HOURS = "Ah"
 
@@ -260,6 +279,94 @@ SENSOR_DEFS = {
         "icon": ICON_BALANCED_CELL_BITMASK,
         "accuracy_decimals": 0,
         "device_class": DEVICE_CLASS_EMPTY,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_SHORT_CIRCUIT_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_CHARGE_OVERCURRENT_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_DISCHARGE_OVERCURRENT_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_CELL_OVERVOLTAGE_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_CHARGE_UNDERCURRENT_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_PACK_OVERVOLTAGE_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_PACK_UNDERVOLTAGE_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_CHARGE_OVERTEMPERATURE_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_CHARGE_UNDERTEMPERATURE_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_DISCHARGE_OVERTEMPERATURE_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+    },
+    CONF_DISCHARGE_UNDERTEMPERATURE_PROTECTION_COUNT: {
+        "unit_of_measurement": UNIT_EMPTY,
+        "icon": ICON_PROTECTION_COUNT,
+        "accuracy_decimals": 0,
+        "device_class": DEVICE_CLASS_EMPTY,
+        "state_class": STATE_CLASS_TOTAL_INCREASING,
         "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
     },
 }
