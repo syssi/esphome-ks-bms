@@ -803,4 +803,103 @@ TEST(KsBmsBleBasicConfigTest, DispatchedViaOnData) {
   EXPECT_NEAR(cell_full.state, 3.650f, 0.001f);
 }
 
+// ── History frame (0x08) ──────────────────────────────────────────────────────
+
+TEST(KsBmsBleHistoryTest, AllZeroCounters) {
+  TestableKsBmsBle bms;
+  sensor::Sensor scpt, cot, dot, otom, tomu, oot, out, chtt, ltct, htdt, ltdt;
+  bms.set_short_circuit_protection_count_sensor(&scpt);
+  bms.set_charge_overcurrent_protection_count_sensor(&cot);
+  bms.set_discharge_overcurrent_protection_count_sensor(&dot);
+  bms.set_cell_overvoltage_protection_count_sensor(&otom);
+  bms.set_charge_undercurrent_protection_count_sensor(&tomu);
+  bms.set_pack_overvoltage_protection_count_sensor(&oot);
+  bms.set_pack_undervoltage_protection_count_sensor(&out);
+  bms.set_charge_overtemperature_protection_count_sensor(&chtt);
+  bms.set_charge_undertemperature_protection_count_sensor(&ltct);
+  bms.set_discharge_overtemperature_protection_count_sensor(&htdt);
+  bms.set_discharge_undertemperature_protection_count_sensor(&ltdt);
+
+  bms.decode_history_data_(HISTORY_FRAME_ALL_ZEROS);
+
+  EXPECT_FLOAT_EQ(scpt.state, 0.0f);
+  EXPECT_FLOAT_EQ(cot.state, 0.0f);
+  EXPECT_FLOAT_EQ(dot.state, 0.0f);
+  EXPECT_FLOAT_EQ(otom.state, 0.0f);
+  EXPECT_FLOAT_EQ(tomu.state, 0.0f);
+  EXPECT_FLOAT_EQ(oot.state, 0.0f);
+  EXPECT_FLOAT_EQ(out.state, 0.0f);
+  EXPECT_FLOAT_EQ(chtt.state, 0.0f);
+  EXPECT_FLOAT_EQ(ltct.state, 0.0f);
+  EXPECT_FLOAT_EQ(htdt.state, 0.0f);
+  EXPECT_FLOAT_EQ(ltdt.state, 0.0f);
+}
+
+TEST(KsBmsBleHistoryTest, RealFrameCounters) {
+  TestableKsBmsBle bms;
+  sensor::Sensor scpt, cot, dot, otom, tomu, oot, out, chtt, ltct, htdt, ltdt;
+  bms.set_short_circuit_protection_count_sensor(&scpt);
+  bms.set_charge_overcurrent_protection_count_sensor(&cot);
+  bms.set_discharge_overcurrent_protection_count_sensor(&dot);
+  bms.set_cell_overvoltage_protection_count_sensor(&otom);
+  bms.set_charge_undercurrent_protection_count_sensor(&tomu);
+  bms.set_pack_overvoltage_protection_count_sensor(&oot);
+  bms.set_pack_undervoltage_protection_count_sensor(&out);
+  bms.set_charge_overtemperature_protection_count_sensor(&chtt);
+  bms.set_charge_undertemperature_protection_count_sensor(&ltct);
+  bms.set_discharge_overtemperature_protection_count_sensor(&htdt);
+  bms.set_discharge_undertemperature_protection_count_sensor(&ltdt);
+
+  bms.decode_history_data_(HISTORY_FRAME_1);
+
+  EXPECT_FLOAT_EQ(scpt.state, 1.0f);
+  EXPECT_FLOAT_EQ(cot.state, 1.0f);
+  EXPECT_FLOAT_EQ(dot.state, 1.0f);
+  EXPECT_FLOAT_EQ(otom.state, 2.0f);
+  EXPECT_FLOAT_EQ(tomu.state, 2.0f);
+  EXPECT_FLOAT_EQ(oot.state, 0.0f);
+  EXPECT_FLOAT_EQ(out.state, 0.0f);
+  EXPECT_FLOAT_EQ(chtt.state, 0.0f);
+  EXPECT_FLOAT_EQ(ltct.state, 0.0f);
+  EXPECT_FLOAT_EQ(htdt.state, 0.0f);
+  EXPECT_FLOAT_EQ(ltdt.state, 0.0f);
+}
+
+TEST(KsBmsBleHistoryTest, RealFrameWithHighCellOvervoltageCount) {
+  TestableKsBmsBle bms;
+  sensor::Sensor scpt, cot, dot, otom, tomu, oot, out;
+  bms.set_short_circuit_protection_count_sensor(&scpt);
+  bms.set_charge_overcurrent_protection_count_sensor(&cot);
+  bms.set_discharge_overcurrent_protection_count_sensor(&dot);
+  bms.set_cell_overvoltage_protection_count_sensor(&otom);
+  bms.set_charge_undercurrent_protection_count_sensor(&tomu);
+  bms.set_pack_overvoltage_protection_count_sensor(&oot);
+  bms.set_pack_undervoltage_protection_count_sensor(&out);
+
+  bms.decode_history_data_(HISTORY_FRAME_2);
+
+  EXPECT_FLOAT_EQ(scpt.state, 0.0f);
+  EXPECT_FLOAT_EQ(cot.state, 1.0f);
+  EXPECT_FLOAT_EQ(dot.state, 1.0f);
+  EXPECT_FLOAT_EQ(otom.state, 105.0f);
+  EXPECT_FLOAT_EQ(tomu.state, 1.0f);
+  EXPECT_FLOAT_EQ(oot.state, 0.0f);
+  EXPECT_FLOAT_EQ(out.state, 1.0f);
+}
+
+TEST(KsBmsBleHistoryTest, NullSensorsDoNotCrash) {
+  TestableKsBmsBle bms;
+  bms.decode_history_data_(HISTORY_FRAME_1);  // must not crash with all sensors null
+}
+
+TEST(KsBmsBleHistoryTest, DispatchedViaOnData) {
+  TestableKsBmsBle bms;
+  sensor::Sensor otom;
+  bms.set_cell_overvoltage_protection_count_sensor(&otom);
+
+  bms.on_ks_bms_ble_data(0, HISTORY_FRAME_2);
+
+  EXPECT_FLOAT_EQ(otom.state, 105.0f);
+}
+
 }  // namespace esphome::ks_bms_ble::testing

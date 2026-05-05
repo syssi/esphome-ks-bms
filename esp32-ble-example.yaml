@@ -124,6 +124,28 @@ sensor:
       name: "balanced cell"
     balanced_cell_bitmask:
       name: "balanced cell bitmask"
+    short_circuit_protection_count:
+      name: "short circuit protection count"
+    charge_overcurrent_protection_count:
+      name: "charge overcurrent protection count"
+    discharge_overcurrent_protection_count:
+      name: "discharge overcurrent protection count"
+    cell_overvoltage_protection_count:
+      name: "cell overvoltage protection count"
+    charge_undercurrent_protection_count:
+      name: "charge undercurrent protection count"
+    pack_overvoltage_protection_count:
+      name: "pack overvoltage protection count"
+    pack_undervoltage_protection_count:
+      name: "pack undervoltage protection count"
+    charge_overtemperature_protection_count:
+      name: "charge overtemperature protection count"
+    charge_undertemperature_protection_count:
+      name: "charge undertemperature protection count"
+    discharge_overtemperature_protection_count:
+      name: "discharge overtemperature protection count"
+    discharge_undertemperature_protection_count:
+      name: "discharge undertemperature protection count"
     temperature_1:
       name: "temperature 1"
     temperature_2:

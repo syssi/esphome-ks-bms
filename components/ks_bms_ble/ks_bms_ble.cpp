@@ -263,8 +263,7 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
       this->decode_current_protection_data_(data);
       break;
     case KS_FRAME_TYPE_HISTORY:
-      ESP_LOGD(TAG, "History frame received (ignored): %s",
-               format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+      this->decode_history_data_(data);
       break;
 
     default:
@@ -393,6 +392,37 @@ void KsBmsBle::decode_status_data_(const std::vector<uint8_t> &data) {
   }
 
   // 34    1  0x7D         End of frame
+}
+
+void KsBmsBle::decode_history_data_(const std::vector<uint8_t> &data) {
+  auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
+
+  ESP_LOGI(TAG, "History frame received");
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+
+  // Byte Len  Description
+  //  3    2   scpt  Short circuit protection count
+  this->publish_state_(this->short_circuit_protection_count_sensor_, ks_get_16bit(3) * 1.0f);
+  //  5    2   cot   Charge overcurrent protection count
+  this->publish_state_(this->charge_overcurrent_protection_count_sensor_, ks_get_16bit(5) * 1.0f);
+  //  7    2   dot   Discharge overcurrent protection count
+  this->publish_state_(this->discharge_overcurrent_protection_count_sensor_, ks_get_16bit(7) * 1.0f);
+  //  9    2   otom  Cell overvoltage protection count
+  this->publish_state_(this->cell_overvoltage_protection_count_sensor_, ks_get_16bit(9) * 1.0f);
+  // 11    2   tomu  Charge undercurrent protection count
+  this->publish_state_(this->charge_undercurrent_protection_count_sensor_, ks_get_16bit(11) * 1.0f);
+  // 13    2   oot   Pack overvoltage protection count
+  this->publish_state_(this->pack_overvoltage_protection_count_sensor_, ks_get_16bit(13) * 1.0f);
+  // 15    2   out   Pack undervoltage protection count
+  this->publish_state_(this->pack_undervoltage_protection_count_sensor_, ks_get_16bit(15) * 1.0f);
+  // 17    2   chtt  Charge overtemperature protection count
+  this->publish_state_(this->charge_overtemperature_protection_count_sensor_, ks_get_16bit(17) * 1.0f);
+  // 19    2   ltct  Charge undertemperature protection count
+  this->publish_state_(this->charge_undertemperature_protection_count_sensor_, ks_get_16bit(19) * 1.0f);
+  // 21    2   htdt  Discharge overtemperature protection count
+  this->publish_state_(this->discharge_overtemperature_protection_count_sensor_, ks_get_16bit(21) * 1.0f);
+  // 23    2   ltdt  Discharge undertemperature protection count
+  this->publish_state_(this->discharge_undertemperature_protection_count_sensor_, ks_get_16bit(23) * 1.0f);
 }
 
 void KsBmsBle::decode_basic_config_data_(const std::vector<uint8_t> &data) {
@@ -854,6 +884,20 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_SENSOR("", "Temperature 8", this->temperatures_[7].temperature_sensor_);
   LOG_SENSOR("", "Balanced cell", this->balanced_cell_sensor_);
   LOG_SENSOR("", "Balanced cell bitmask", this->balanced_cell_bitmask_sensor_);
+
+  LOG_SENSOR("", "Short circuit protection count", this->short_circuit_protection_count_sensor_);
+  LOG_SENSOR("", "Charge overcurrent protection count", this->charge_overcurrent_protection_count_sensor_);
+  LOG_SENSOR("", "Discharge overcurrent protection count", this->discharge_overcurrent_protection_count_sensor_);
+  LOG_SENSOR("", "Cell overvoltage protection count", this->cell_overvoltage_protection_count_sensor_);
+  LOG_SENSOR("", "Charge undercurrent protection count", this->charge_undercurrent_protection_count_sensor_);
+  LOG_SENSOR("", "Pack overvoltage protection count", this->pack_overvoltage_protection_count_sensor_);
+  LOG_SENSOR("", "Pack undervoltage protection count", this->pack_undervoltage_protection_count_sensor_);
+  LOG_SENSOR("", "Charge overtemperature protection count", this->charge_overtemperature_protection_count_sensor_);
+  LOG_SENSOR("", "Charge undertemperature protection count", this->charge_undertemperature_protection_count_sensor_);
+  LOG_SENSOR("", "Discharge overtemperature protection count",
+             this->discharge_overtemperature_protection_count_sensor_);
+  LOG_SENSOR("", "Discharge undertemperature protection count",
+             this->discharge_undertemperature_protection_count_sensor_);
 
   LOG_SENSOR("", "Voltage protection bitmask", this->voltage_protection_bitmask_sensor_);
   LOG_SENSOR("", "Current protection bitmask", this->current_protection_bitmask_sensor_);

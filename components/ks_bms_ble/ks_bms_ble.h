@@ -228,6 +228,38 @@ class KsBmsBle :
     balanced_cell_bitmask_sensor_ = balanced_cell_bitmask_sensor;
   }
 
+  void set_short_circuit_protection_count_sensor(sensor::Sensor *s) { short_circuit_protection_count_sensor_ = s; }
+  void set_charge_overcurrent_protection_count_sensor(sensor::Sensor *s) {
+    charge_overcurrent_protection_count_sensor_ = s;
+  }
+  void set_discharge_overcurrent_protection_count_sensor(sensor::Sensor *s) {
+    discharge_overcurrent_protection_count_sensor_ = s;
+  }
+  void set_cell_overvoltage_protection_count_sensor(sensor::Sensor *s) {
+    cell_overvoltage_protection_count_sensor_ = s;
+  }
+  void set_charge_undercurrent_protection_count_sensor(sensor::Sensor *s) {
+    charge_undercurrent_protection_count_sensor_ = s;
+  }
+  void set_pack_overvoltage_protection_count_sensor(sensor::Sensor *s) {
+    pack_overvoltage_protection_count_sensor_ = s;
+  }
+  void set_pack_undervoltage_protection_count_sensor(sensor::Sensor *s) {
+    pack_undervoltage_protection_count_sensor_ = s;
+  }
+  void set_charge_overtemperature_protection_count_sensor(sensor::Sensor *s) {
+    charge_overtemperature_protection_count_sensor_ = s;
+  }
+  void set_charge_undertemperature_protection_count_sensor(sensor::Sensor *s) {
+    charge_undertemperature_protection_count_sensor_ = s;
+  }
+  void set_discharge_overtemperature_protection_count_sensor(sensor::Sensor *s) {
+    discharge_overtemperature_protection_count_sensor_ = s;
+  }
+  void set_discharge_undertemperature_protection_count_sensor(sensor::Sensor *s) {
+    discharge_undertemperature_protection_count_sensor_ = s;
+  }
+
   void set_min_cell_voltage_sensor(sensor::Sensor *min_cell_voltage_sensor) {
     min_cell_voltage_sensor_ = min_cell_voltage_sensor;
   }
@@ -367,6 +399,18 @@ class KsBmsBle :
   sensor::Sensor *balanced_cell_sensor_{nullptr};
   sensor::Sensor *balanced_cell_bitmask_sensor_{nullptr};
 
+  sensor::Sensor *short_circuit_protection_count_sensor_{nullptr};
+  sensor::Sensor *charge_overcurrent_protection_count_sensor_{nullptr};
+  sensor::Sensor *discharge_overcurrent_protection_count_sensor_{nullptr};
+  sensor::Sensor *cell_overvoltage_protection_count_sensor_{nullptr};
+  sensor::Sensor *charge_undercurrent_protection_count_sensor_{nullptr};
+  sensor::Sensor *pack_overvoltage_protection_count_sensor_{nullptr};
+  sensor::Sensor *pack_undervoltage_protection_count_sensor_{nullptr};
+  sensor::Sensor *charge_overtemperature_protection_count_sensor_{nullptr};
+  sensor::Sensor *charge_undertemperature_protection_count_sensor_{nullptr};
+  sensor::Sensor *discharge_overtemperature_protection_count_sensor_{nullptr};
+  sensor::Sensor *discharge_undertemperature_protection_count_sensor_{nullptr};
+
   text_sensor::TextSensor *software_version_text_sensor_{nullptr};
   text_sensor::TextSensor *hardware_version_text_sensor_{nullptr};
   text_sensor::TextSensor *bootloader_version_text_sensor_{nullptr};
@@ -407,6 +451,7 @@ class KsBmsBle :
   void decode_bluetooth_software_version_data_(const std::vector<uint8_t> &data);
   void decode_software_version_data_(const std::vector<uint8_t> &data);
   void decode_hardware_version_data_(const std::vector<uint8_t> &data);
+  void decode_history_data_(const std::vector<uint8_t> &data);
   void decode_bootloader_version_data_(const std::vector<uint8_t> &data);
   void publish_state_(binary_sensor::BinarySensor *binary_sensor, const bool &state);
   void publish_state_(number::Number *obj, float value);

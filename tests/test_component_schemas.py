@@ -47,7 +47,7 @@ class TestSensorLists:
         assert sensor.CONF_DELTA_CELL_VOLTAGE in sensor.SENSOR_DEFS
         assert sensor.CONF_AVERAGE_CELL_VOLTAGE in sensor.SENSOR_DEFS
         assert sensor.CONF_STATE_OF_HEALTH in sensor.SENSOR_DEFS
-        assert len(sensor.SENSOR_DEFS) == 26
+        assert len(sensor.SENSOR_DEFS) == 37
 
     def test_no_cell_keys_in_sensor_defs(self):
         for key in sensor.SENSOR_DEFS:
