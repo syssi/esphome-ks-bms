@@ -3,8 +3,7 @@
 #include "esphome/components/switch/switch.h"
 #include "esphome/core/component.h"
 
-namespace esphome {
-namespace ks_bms_ble {
+namespace esphome::ks_bms_ble {
 
 class KsBmsBle;
 
@@ -21,5 +20,4 @@ class KsSwitch : public switch_::Switch, public Component {
   uint8_t holding_register_;
 };
 
-}  // namespace ks_bms_ble
-}  // namespace esphome
+}  // namespace esphome::ks_bms_ble
