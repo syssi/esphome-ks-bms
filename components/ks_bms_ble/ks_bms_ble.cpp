@@ -9,8 +9,7 @@
 #define ADDR_STR(x) (x).c_str()
 #endif
 
-namespace esphome {
-namespace ks_bms_ble {
+namespace esphome::ks_bms_ble {
 
 static const char *const TAG = "ks_bms_ble";
 
@@ -981,5 +980,4 @@ std::string KsBmsBle::fet_control_status_to_balancer_status_text_(uint16_t fet_c
   return "Idle";
 }
 
-}  // namespace ks_bms_ble
-}  // namespace esphome
+}  // namespace esphome::ks_bms_ble

@@ -3,8 +3,7 @@
 #include "esphome/components/number/number.h"
 #include "esphome/core/component.h"
 
-namespace esphome {
-namespace ks_bms_ble {
+namespace esphome::ks_bms_ble {
 
 class KsBmsBle;
 
@@ -26,5 +25,4 @@ class KsNumber : public number::Number, public Component {
   float offset_{0.0f};
 };
 
-}  // namespace ks_bms_ble
-}  // namespace esphome
+}  // namespace esphome::ks_bms_ble

@@ -13,8 +13,7 @@
 #include <esp_gattc_api.h>
 #endif
 
-namespace esphome {
-namespace ks_bms_ble {
+namespace esphome::ks_bms_ble {
 
 #ifdef USE_ESP32
 namespace espbt = esphome::esp32_ble_tracker;
@@ -465,5 +464,4 @@ class KsBmsBle :
   bool check_bit_(uint16_t mask, uint16_t flag) { return (mask & flag) == flag; }
 };
 
-}  // namespace ks_bms_ble
-}  // namespace esphome
+}  // namespace esphome::ks_bms_ble

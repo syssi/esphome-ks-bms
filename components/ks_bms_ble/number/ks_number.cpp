@@ -2,8 +2,7 @@
 #include "../ks_bms_ble.h"
 #include "esphome/core/log.h"
 
-namespace esphome {
-namespace ks_bms_ble {
+namespace esphome::ks_bms_ble {
 
 static const char *const TAG = "ks_bms_ble.number";
 
@@ -16,5 +15,4 @@ void KsNumber::control(float value) {
   }
 }
 
-}  // namespace ks_bms_ble
-}  // namespace esphome
+}  // namespace esphome::ks_bms_ble
