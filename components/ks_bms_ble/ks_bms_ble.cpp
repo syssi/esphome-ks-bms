@@ -428,7 +428,7 @@ void KsBmsBle::decode_basic_config_data_(const std::vector<uint8_t> &data) {
   auto ks_get_16bit = [&](size_t i) -> uint16_t { return (uint16_t(data[i + 0]) << 8) | (uint16_t(data[i + 1]) << 0); };
 
   ESP_LOGI(TAG, "Basic config frame received");
-  ESP_LOGI(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
+  ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
 
   // Layout: 10 values, length 0x14 = 20, total frame 24 bytes
   //
@@ -461,9 +461,9 @@ void KsBmsBle::decode_basic_config_data_(const std::vector<uint8_t> &data) {
   // Register 0x13: Balance open voltage diff (÷1000 V)
   this->publish_state_(this->balance_open_voltage_diff_number_, ks_get_16bit(9) * 0.001f);
   // Register 0x14: Unknown (integer)
-  ESP_LOGD(TAG, "  Unknown reg 0x14: %d", ks_get_16bit(11));
+  ESP_LOGVV(TAG, "  Unknown reg 0x14: %d", ks_get_16bit(11));
   // Register 0x15: Unknown (÷100)
-  ESP_LOGD(TAG, "  Unknown reg 0x15: %.2f", ks_get_16bit(13) * 0.01f);
+  ESP_LOGVV(TAG, "  Unknown reg 0x15: %.2f", ks_get_16bit(13) * 0.01f);
   // Register 0x16: SoC 80% voltage (÷1000 V)
   this->publish_state_(this->soc_80_voltage_number_, ks_get_16bit(15) * 0.001f);
   // Register 0x17: SoC 60% voltage (÷1000 V)
