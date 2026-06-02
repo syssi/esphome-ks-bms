@@ -11,6 +11,7 @@ from esphome.const import (
     ICON_EMPTY,
     UNIT_AMPERE,
     UNIT_CELSIUS,
+    UNIT_MILLISECOND,
     UNIT_VOLT,
 )
 
@@ -20,7 +21,6 @@ DEPENDENCIES = ["ks_bms_ble"]
 CODEOWNERS = ["@syssi"]
 
 UNIT_AMPERE_HOUR = "Ah"
-UNIT_MILLISECOND = "ms"
 
 KsNumber = ks_bms_ble_ns.class_("KsNumber", number.Number, cg.Component)
 
