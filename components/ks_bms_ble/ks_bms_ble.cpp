@@ -18,6 +18,7 @@ static const uint16_t KS_BMS_NOTIFY_CHARACTERISTIC_UUID = 0xFF01;
 static const uint16_t KS_BMS_CONTROL_CHARACTERISTIC_UUID = 0xFF02;  // handle 0x10
 
 static const uint16_t MAX_RESPONSE_SIZE = 40;
+static const uint8_t MAX_NO_RESPONSE_COUNT = 10;
 
 static const uint8_t KS_PKT_START = 0x7B;
 static const uint8_t KS_PKT_END = 0x7D;
@@ -150,6 +151,7 @@ void KsBmsBle::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gat
 }
 
 void KsBmsBle::update() {
+  this->track_online_status_();
   if (this->node_state != espbt::ClientState::ESTABLISHED) {
     ESP_LOGW(TAG, "[%s] Not connected", ADDR_STR(this->parent_->address_str()));
     return;
@@ -211,6 +213,8 @@ void KsBmsBle::on_ks_bms_ble_data(const uint8_t &handle, const std::vector<uint8
     ESP_LOGW(TAG, "Invalid response received: %s", format_hex_pretty(&data.front(), data.size()).c_str());  // NOLINT
     return;
   }
+
+  this->reset_online_status_tracker_();
 
   uint8_t frame_type = data[1];
 
@@ -822,6 +826,7 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   ESP_LOGCONFIG(TAG, "  Device type: %d (%s)", this->device_type_,
                 this->device_type_ == 2 ? "status cmd 0x61" : "status cmd 0x01");
 
+  LOG_BINARY_SENSOR("", "Online Status", this->online_status_binary_sensor_);
   LOG_BINARY_SENSOR("", "Charging", this->charging_binary_sensor_);
   LOG_BINARY_SENSOR("", "Discharging", this->discharging_binary_sensor_);
   LOG_BINARY_SENSOR("", "Limiting Current", this->limiting_current_binary_sensor_);
@@ -916,6 +921,76 @@ void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,reada
   LOG_TEXT_SENSOR("", "Temperature protection", this->temperature_protection_text_sensor_);
   LOG_TEXT_SENSOR("", "Errors", this->errors_text_sensor_);
   LOG_TEXT_SENSOR("", "Balancer status", this->balancer_status_text_sensor_);
+}
+
+void KsBmsBle::track_online_status_() {
+  if (this->no_response_count_ < MAX_NO_RESPONSE_COUNT) {
+    this->no_response_count_++;
+  }
+  if (this->no_response_count_ == MAX_NO_RESPONSE_COUNT) {
+    this->publish_device_unavailable_();
+    this->no_response_count_++;
+  }
+}
+
+void KsBmsBle::reset_online_status_tracker_() {
+  this->no_response_count_ = 0;
+  this->publish_state_(this->online_status_binary_sensor_, true);
+}
+
+void KsBmsBle::publish_device_unavailable_() {
+  this->publish_state_(this->online_status_binary_sensor_, false);
+
+  this->publish_state_(this->total_voltage_sensor_, NAN);
+  this->publish_state_(this->current_sensor_, NAN);
+  this->publish_state_(this->power_sensor_, NAN);
+  this->publish_state_(this->charging_power_sensor_, NAN);
+  this->publish_state_(this->discharging_power_sensor_, NAN);
+  this->publish_state_(this->capacity_remaining_sensor_, NAN);
+  this->publish_state_(this->full_charge_capacity_sensor_, NAN);
+  this->publish_state_(this->voltage_protection_bitmask_sensor_, NAN);
+  this->publish_state_(this->current_protection_bitmask_sensor_, NAN);
+  this->publish_state_(this->temperature_protection_bitmask_sensor_, NAN);
+  this->publish_state_(this->error_bitmask_sensor_, NAN);
+  this->publish_state_(this->state_of_charge_sensor_, NAN);
+  this->publish_state_(this->nominal_capacity_sensor_, NAN);
+  this->publish_state_(this->charging_cycles_sensor_, NAN);
+  this->publish_state_(this->average_temperature_sensor_, NAN);
+  this->publish_state_(this->ambient_temperature_sensor_, NAN);
+  this->publish_state_(this->mosfet_temperature_sensor_, NAN);
+  this->publish_state_(this->state_of_health_sensor_, NAN);
+  this->publish_state_(this->balanced_cell_sensor_, NAN);
+  this->publish_state_(this->balanced_cell_bitmask_sensor_, NAN);
+  this->publish_state_(this->min_cell_voltage_sensor_, NAN);
+  this->publish_state_(this->max_cell_voltage_sensor_, NAN);
+  this->publish_state_(this->min_voltage_cell_sensor_, NAN);
+  this->publish_state_(this->max_voltage_cell_sensor_, NAN);
+  this->publish_state_(this->delta_cell_voltage_sensor_, NAN);
+  this->publish_state_(this->average_cell_voltage_sensor_, NAN);
+  this->publish_state_(this->short_circuit_protection_count_sensor_, NAN);
+  this->publish_state_(this->charge_overcurrent_protection_count_sensor_, NAN);
+  this->publish_state_(this->discharge_overcurrent_protection_count_sensor_, NAN);
+  this->publish_state_(this->cell_overvoltage_protection_count_sensor_, NAN);
+  this->publish_state_(this->charge_undercurrent_protection_count_sensor_, NAN);
+  this->publish_state_(this->pack_overvoltage_protection_count_sensor_, NAN);
+  this->publish_state_(this->pack_undervoltage_protection_count_sensor_, NAN);
+  this->publish_state_(this->charge_overtemperature_protection_count_sensor_, NAN);
+  this->publish_state_(this->charge_undertemperature_protection_count_sensor_, NAN);
+  this->publish_state_(this->discharge_overtemperature_protection_count_sensor_, NAN);
+  this->publish_state_(this->discharge_undertemperature_protection_count_sensor_, NAN);
+
+  for (auto &cell : this->cells_) {
+    this->publish_state_(cell.cell_voltage_sensor_, NAN);
+  }
+  for (auto &temp : this->temperatures_) {
+    this->publish_state_(temp.temperature_sensor_, NAN);
+  }
+
+  this->publish_state_(this->voltage_protection_text_sensor_, "Offline");
+  this->publish_state_(this->current_protection_text_sensor_, "Offline");
+  this->publish_state_(this->temperature_protection_text_sensor_, "Offline");
+  this->publish_state_(this->errors_text_sensor_, "Offline");
+  this->publish_state_(this->balancer_status_text_sensor_, "Offline");
 }
 
 void KsBmsBle::publish_state_(binary_sensor::BinarySensor *binary_sensor, const bool &state) {

@@ -33,6 +33,9 @@ class KsBmsBle :
   void update() override;
   float get_setup_priority() const override { return setup_priority::DATA; }
 
+  void set_online_status_binary_sensor(binary_sensor::BinarySensor *online_status_binary_sensor) {
+    online_status_binary_sensor_ = online_status_binary_sensor;
+  }
   void set_charging_binary_sensor(binary_sensor::BinarySensor *charging_binary_sensor) {
     charging_binary_sensor_ = charging_binary_sensor;
   }
@@ -322,9 +325,12 @@ class KsBmsBle :
 
  protected:
   uint8_t device_type_{1};
+  binary_sensor::BinarySensor *online_status_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *charging_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *discharging_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *limiting_current_binary_sensor_{nullptr};
+
+  uint8_t no_response_count_{0};
 
   switch_::Switch *charging_switch_{nullptr};
   switch_::Switch *discharging_switch_{nullptr};
@@ -457,6 +463,9 @@ class KsBmsBle :
   void publish_state_(sensor::Sensor *sensor, float value);
   void publish_state_(switch_::Switch *obj, const bool &state);
   void publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state);
+  void publish_device_unavailable_();
+  void reset_online_status_tracker_();
+  void track_online_status_();
   bool send_command_(uint8_t function);
   std::string bitmask_to_string_(const char *const messages[], const uint8_t &messages_size, const uint16_t &mask);
   std::string fet_control_status_to_balancer_status_text_(uint16_t fet_control_status);
