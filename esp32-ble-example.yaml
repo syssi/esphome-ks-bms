@@ -62,6 +62,8 @@ ks_bms_ble:
 binary_sensor:
   - platform: ks_bms_ble
     ks_bms_ble_id: bms0
+    online_status:
+      name: "online status"
     charging:
       name: "charging"
     discharging:
