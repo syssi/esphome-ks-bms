@@ -25,6 +25,11 @@ class TestableKsBmsBle : public KsBmsBle {
   using KsBmsBle::decode_temperature_protection_data_;
   using KsBmsBle::decode_voltage_protection_data_;
   using KsBmsBle::on_ks_bms_ble_data;
+  using KsBmsBle::track_online_status_;
+  using KsBmsBle::reset_online_status_tracker_;
+  using KsBmsBle::publish_device_unavailable_;
+
+  uint8_t get_no_response_count() const { return no_response_count_; }
 };
 
 // Concrete Switch implementation for testing (write_state is pure virtual).

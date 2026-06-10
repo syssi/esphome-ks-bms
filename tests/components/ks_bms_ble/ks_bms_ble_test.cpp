@@ -902,4 +902,203 @@ TEST(KsBmsBleHistoryTest, DispatchedViaOnData) {
   EXPECT_FLOAT_EQ(otom.state, 105.0f);
 }
 
+// ── Online status tracker ────────────────────────────────────────────────────
+
+TEST(KsBmsBleOnlineStatusTrackerTest, TrackBeforeThresholdDoesNotPublishUnavailable) {
+  TestableKsBmsBle bms;
+  binary_sensor::BinarySensor online;
+  bms.set_online_status_binary_sensor(&online);
+
+  for (int i = 0; i < 9; i++)
+    bms.track_online_status_();
+
+  EXPECT_EQ(bms.get_no_response_count(), 9);
+  EXPECT_FALSE(online.has_state());
+}
+
+TEST(KsBmsBleOnlineStatusTrackerTest, TrackAtThresholdPublishesUnavailable) {
+  TestableKsBmsBle bms;
+  binary_sensor::BinarySensor online;
+  sensor::Sensor voltage;
+  bms.set_online_status_binary_sensor(&online);
+  bms.set_total_voltage_sensor(&voltage);
+
+  for (int i = 0; i < 10; i++)
+    bms.track_online_status_();
+
+  EXPECT_TRUE(online.has_state());
+  EXPECT_FALSE(online.state);
+  EXPECT_TRUE(std::isnan(voltage.state));
+}
+
+TEST(KsBmsBleOnlineStatusTrackerTest, TrackBeyondThresholdDoesNotRepeat) {
+  TestableKsBmsBle bms;
+  binary_sensor::BinarySensor online;
+  bms.set_online_status_binary_sensor(&online);
+
+  for (int i = 0; i < 10; i++)
+    bms.track_online_status_();
+
+  EXPECT_FALSE(online.state);
+  online.publish_state(true);  // manually override after first unavailable
+
+  bms.track_online_status_();  // 11th call — must not re-publish unavailable
+
+  EXPECT_TRUE(online.state);  // still true — not overwritten again
+}
+
+TEST(KsBmsBleOnlineStatusTrackerTest, ResetSetsOnlineStatusTrue) {
+  TestableKsBmsBle bms;
+  binary_sensor::BinarySensor online;
+  bms.set_online_status_binary_sensor(&online);
+
+  bms.reset_online_status_tracker_();
+
+  EXPECT_TRUE(online.has_state());
+  EXPECT_TRUE(online.state);
+  EXPECT_EQ(bms.get_no_response_count(), 0);
+}
+
+TEST(KsBmsBleOnlineStatusTrackerTest, ResetAfterUnavailableReenablesTracker) {
+  TestableKsBmsBle bms;
+  binary_sensor::BinarySensor online;
+  sensor::Sensor voltage;
+  bms.set_online_status_binary_sensor(&online);
+  bms.set_total_voltage_sensor(&voltage);
+
+  for (int i = 0; i < 10; i++)
+    bms.track_online_status_();
+  EXPECT_FALSE(online.state);
+
+  bms.reset_online_status_tracker_();
+  EXPECT_TRUE(online.state);
+  EXPECT_EQ(bms.get_no_response_count(), 0);
+
+  // second disconnection — tracker must trigger again
+  voltage.publish_state(52.0f);
+  for (int i = 0; i < 10; i++)
+    bms.track_online_status_();
+
+  EXPECT_FALSE(online.state);
+  EXPECT_TRUE(std::isnan(voltage.state));
+}
+
+TEST(KsBmsBleOnlineStatusTrackerTest, ValidFrameViaOnDataResetsTracker) {
+  TestableKsBmsBle bms;
+  binary_sensor::BinarySensor online;
+  bms.set_online_status_binary_sensor(&online);
+
+  for (int i = 0; i < 9; i++)
+    bms.track_online_status_();
+
+  bms.on_ks_bms_ble_data(0, STATUS_FRAME_1);  // valid frame resets counter
+
+  EXPECT_EQ(bms.get_no_response_count(), 0);
+  EXPECT_TRUE(online.state);
+
+  // 10 more tracks after reset must trigger unavailable again
+  for (int i = 0; i < 10; i++)
+    bms.track_online_status_();
+  EXPECT_FALSE(online.state);
+}
+
+// ── publish_device_unavailable_ ──────────────────────────────────────────────
+
+TEST(KsBmsBlePublishDeviceUnavailableTest, SetsOnlineStatusFalse) {
+  TestableKsBmsBle bms;
+  binary_sensor::BinarySensor online;
+  bms.set_online_status_binary_sensor(&online);
+
+  bms.publish_device_unavailable_();
+
+  EXPECT_TRUE(online.has_state());
+  EXPECT_FALSE(online.state);
+}
+
+TEST(KsBmsBlePublishDeviceUnavailableTest, SetsNumericSensorsToNAN) {
+  TestableKsBmsBle bms;
+  sensor::Sensor voltage, current, power, charging_power, discharging_power;
+  sensor::Sensor capacity_remaining, soc, soh, cycles, avg_temp;
+  bms.set_total_voltage_sensor(&voltage);
+  bms.set_current_sensor(&current);
+  bms.set_power_sensor(&power);
+  bms.set_charging_power_sensor(&charging_power);
+  bms.set_discharging_power_sensor(&discharging_power);
+  bms.set_capacity_remaining_sensor(&capacity_remaining);
+  bms.set_state_of_charge_sensor(&soc);
+  bms.set_state_of_health_sensor(&soh);
+  bms.set_charging_cycles_sensor(&cycles);
+  bms.set_average_temperature_sensor(&avg_temp);
+
+  bms.publish_device_unavailable_();
+
+  EXPECT_TRUE(std::isnan(voltage.state));
+  EXPECT_TRUE(std::isnan(current.state));
+  EXPECT_TRUE(std::isnan(power.state));
+  EXPECT_TRUE(std::isnan(charging_power.state));
+  EXPECT_TRUE(std::isnan(discharging_power.state));
+  EXPECT_TRUE(std::isnan(capacity_remaining.state));
+  EXPECT_TRUE(std::isnan(soc.state));
+  EXPECT_TRUE(std::isnan(soh.state));
+  EXPECT_TRUE(std::isnan(cycles.state));
+  EXPECT_TRUE(std::isnan(avg_temp.state));
+}
+
+TEST(KsBmsBlePublishDeviceUnavailableTest, SetsCellVoltageAndTemperatureSensorsToNAN) {
+  TestableKsBmsBle bms;
+  sensor::Sensor cell1, cell16, temp1, temp4;
+  bms.set_cell_voltage_sensor(0, &cell1);
+  bms.set_cell_voltage_sensor(15, &cell16);
+  bms.set_temperature_sensor(0, &temp1);
+  bms.set_temperature_sensor(3, &temp4);
+
+  bms.publish_device_unavailable_();
+
+  EXPECT_TRUE(std::isnan(cell1.state));
+  EXPECT_TRUE(std::isnan(cell16.state));
+  EXPECT_TRUE(std::isnan(temp1.state));
+  EXPECT_TRUE(std::isnan(temp4.state));
+}
+
+TEST(KsBmsBlePublishDeviceUnavailableTest, SetsDynamicTextSensorsToOffline) {
+  TestableKsBmsBle bms;
+  text_sensor::TextSensor voltage_prot, current_prot, temp_prot, errors, balancer;
+  bms.set_voltage_protection_text_sensor(&voltage_prot);
+  bms.set_current_protection_text_sensor(&current_prot);
+  bms.set_temperature_protection_text_sensor(&temp_prot);
+  bms.set_errors_text_sensor(&errors);
+  bms.set_balancer_status_text_sensor(&balancer);
+
+  bms.publish_device_unavailable_();
+
+  EXPECT_EQ(voltage_prot.state, "Offline");
+  EXPECT_EQ(current_prot.state, "Offline");
+  EXPECT_EQ(temp_prot.state, "Offline");
+  EXPECT_EQ(errors.state, "Offline");
+  EXPECT_EQ(balancer.state, "Offline");
+}
+
+TEST(KsBmsBlePublishDeviceUnavailableTest, LeavesStaticTextSensorsUnchanged) {
+  TestableKsBmsBle bms;
+  text_sensor::TextSensor sw_version, serial, model;
+  bms.set_software_version_text_sensor(&sw_version);
+  bms.set_serial_number_text_sensor(&serial);
+  bms.set_device_model_text_sensor(&model);
+
+  bms.decode_software_version_data_(SOFTWARE_VERSION_FRAME_1);  // "1.5"
+  bms.decode_serial_number_data_(SERIAL_NUMBER_FRAME_1);        // "CER2410-018-030-023"
+  bms.decode_model_name_data_(MODEL_NAME_FRAME_1);              // "Unset"
+
+  bms.publish_device_unavailable_();
+
+  EXPECT_EQ(sw_version.state, "1.5");
+  EXPECT_EQ(serial.state, "CER2410-018-030-023");
+  EXPECT_EQ(model.state, "Unset");
+}
+
+TEST(KsBmsBlePublishDeviceUnavailableTest, NullSensorsDoNotCrash) {
+  TestableKsBmsBle bms;
+  bms.publish_device_unavailable_();  // all sensors null — must not crash
+}
+
 }  // namespace esphome::ks_bms_ble::testing
