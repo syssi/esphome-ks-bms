@@ -824,7 +824,7 @@ void KsBmsBle::decode_bootloader_version_data_(const std::vector<uint8_t> &data)
 void KsBmsBle::dump_config() {  // NOLINT(google-readability-function-size,readability-function-size)
   ESP_LOGCONFIG(TAG, "KsBmsBle:");
   ESP_LOGCONFIG(TAG, "  Device type: %d (%s)", this->device_type_,
-                this->device_type_ == 2 ? "status cmd 0x61" : "status cmd 0x01");
+                this->device_type_ == 2 ? LOG_STR_LITERAL("status cmd 0x61") : LOG_STR_LITERAL("status cmd 0x01"));
 
   LOG_BINARY_SENSOR("", "Online Status", this->online_status_binary_sensor_);
   LOG_BINARY_SENSOR("", "Charging", this->charging_binary_sensor_);
