@@ -20,7 +20,10 @@ from .. import CONF_KS_BMS_BLE_ID, KS_BMS_BLE_COMPONENT_SCHEMA, ks_bms_ble_ns
 DEPENDENCIES = ["ks_bms_ble"]
 CODEOWNERS = ["@syssi"]
 
-UNIT_AMPERE_HOUR = "Ah"
+try:
+    from esphome.components.const import UNIT_AMPERE_HOUR
+except ImportError:  # ESPHome < 2026.2.0
+    UNIT_AMPERE_HOUR = "Ah"
 
 KsNumber = ks_bms_ble_ns.class_("KsNumber", number.Number, cg.Component)
 
