@@ -9,9 +9,14 @@
 #define ADDR_STR(x) (x).c_str()
 #endif
 
+// Fallback for ESPHome < 2026.10.0
+#ifndef ESPHOME_LOG_TAG
+#define ESPHOME_LOG_TAG(name, tag) static const char *const name = tag
+#endif
+
 namespace esphome::ks_bms_ble {
 
-static const char *const TAG = "ks_bms_ble";
+ESPHOME_LOG_TAG(TAG, "ks_bms_ble");
 
 static const uint16_t KS_BMS_SERVICE_UUID = 0xFF00;
 static const uint16_t KS_BMS_NOTIFY_CHARACTERISTIC_UUID = 0xFF01;
