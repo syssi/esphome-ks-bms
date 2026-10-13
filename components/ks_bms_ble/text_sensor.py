@@ -5,6 +5,11 @@ from esphome.const import ENTITY_CATEGORY_DIAGNOSTIC
 
 from . import CONF_KS_BMS_BLE_ID, KS_BMS_BLE_COMPONENT_SCHEMA
 
+try:
+    from esphome.components.const import CONF_SERIAL_NUMBER
+except ImportError:  # ESPHome < 2026.11.0
+    CONF_SERIAL_NUMBER = "serial_number"
+
 DEPENDENCIES = ["ks_bms_ble"]
 
 CODEOWNERS = ["@syssi"]
@@ -12,7 +17,6 @@ CODEOWNERS = ["@syssi"]
 CONF_SOFTWARE_VERSION = "software_version"
 CONF_HARDWARE_VERSION = "hardware_version"
 CONF_BOOTLOADER_VERSION = "bootloader_version"
-CONF_SERIAL_NUMBER = "serial_number"
 CONF_MANUFACTURING_DATE = "manufacturing_date"
 CONF_MODEL_TYPE = "model_type"
 CONF_BLUETOOTH_SOFTWARE_VERSION = "bluetooth_software_version"
