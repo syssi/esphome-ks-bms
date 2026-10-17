@@ -48,7 +48,8 @@ esp32_ble_tracker:
               uint8_t device_type = (mdata.data[1] == 0xfe) ? 2 : 1;
               ESP_LOGI("ble_adv", "KS-BMS found");
               ESP_LOGI("ble_adv", "  Name: %s", x.get_name().c_str());
-              ESP_LOGI("ble_adv", "  MAC address: %s", x.address_str().c_str());
+              char addr_buf[MAC_ADDRESS_PRETTY_BUFFER_SIZE];
+              ESP_LOGI("ble_adv", "  MAC address: %s", x.address_str_to(addr_buf));
               ESP_LOGI("ble_adv", "  Device type: %d", device_type);
               ESP_LOGI("ble_adv", "  Use 'device_type: %d' in your YAML configuration", device_type);
             } else if ((mdata.uuid == esphome::esp32_ble::ESPBTUUID::from_uint16(0x5c61) &&
@@ -59,7 +60,8 @@ esp32_ble_tracker:
                         mdata.data.back() == 0xa4)) {
               ESP_LOGI("ble_adv", "KS-BMS found (unsupported device type 0)");
               ESP_LOGI("ble_adv", "  Name: %s", x.get_name().c_str());
-              ESP_LOGI("ble_adv", "  MAC address: %s", x.address_str().c_str());
+              char addr_buf[MAC_ADDRESS_PRETTY_BUFFER_SIZE];
+              ESP_LOGI("ble_adv", "  MAC address: %s", x.address_str_to(addr_buf));
             }
           }
 
