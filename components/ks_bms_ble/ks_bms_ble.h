@@ -463,12 +463,13 @@ class KsBmsBle :
   void publish_state_(sensor::Sensor *sensor, float value);
   void publish_state_(switch_::Switch *obj, const bool &state);
   void publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state);
+  void publish_state_(text_sensor::TextSensor *text_sensor, const char *state);
   void publish_device_unavailable_();
   void reset_online_status_tracker_();
   void track_online_status_();
   bool send_command_(uint8_t function);
   std::string bitmask_to_string_(const char *const messages[], const uint8_t &messages_size, const uint16_t &mask);
-  std::string fet_control_status_to_balancer_status_text_(uint16_t fet_control_status);
+  const char *fet_control_status_to_balancer_status_text_(uint16_t fet_control_status);
 
   bool check_bit_(uint16_t mask, uint16_t flag) { return (mask & flag) == flag; }
 };

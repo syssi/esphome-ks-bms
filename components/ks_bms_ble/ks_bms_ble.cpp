@@ -1040,6 +1040,13 @@ void KsBmsBle::publish_state_(text_sensor::TextSensor *text_sensor, const std::s
   text_sensor->publish_state(state);
 }
 
+void KsBmsBle::publish_state_(text_sensor::TextSensor *text_sensor, const char *state) {
+  if (text_sensor == nullptr)
+    return;
+
+  text_sensor->publish_state(state);
+}
+
 std::string KsBmsBle::bitmask_to_string_(const char *const messages[], const uint8_t &messages_size,
                                          const uint16_t &mask) {
   std::string values;
@@ -1057,7 +1064,7 @@ std::string KsBmsBle::bitmask_to_string_(const char *const messages[], const uin
   return values;
 }
 
-std::string KsBmsBle::fet_control_status_to_balancer_status_text_(uint16_t fet_control_status) {
+const char *KsBmsBle::fet_control_status_to_balancer_status_text_(uint16_t fet_control_status) {
   if (check_bit_(fet_control_status, 1)) {
     return "Charging";
   }
