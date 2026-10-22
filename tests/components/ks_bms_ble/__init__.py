@@ -1,7 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.const import CONF_ID
-
 from tests.testing_helpers import ComponentManifestOverride
 
 CONF_DEVICE_TYPE = "device_type"
