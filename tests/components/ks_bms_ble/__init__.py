@@ -3,7 +3,10 @@ import esphome.config_validation as cv
 from esphome.const import CONF_ID
 from tests.testing_helpers import ComponentManifestOverride
 
-CONF_DEVICE_TYPE = "device_type"
+try:
+    from esphome.components.const import CONF_DEVICE_TYPE
+except ImportError:  # ESPHome < 2026.11.0
+    CONF_DEVICE_TYPE = "device_type"
 
 ks_bms_ble_ns = cg.esphome_ns.namespace("ks_bms_ble")
 KsBmsBle = ks_bms_ble_ns.class_("KsBmsBle", cg.PollingComponent)

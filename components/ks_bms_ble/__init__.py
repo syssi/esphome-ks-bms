@@ -3,6 +3,11 @@ from esphome.components import ble_client
 import esphome.config_validation as cv
 from esphome.const import CONF_ID
 
+try:
+    from esphome.components.const import CONF_DEVICE_TYPE
+except ImportError:  # ESPHome < 2026.11.0
+    CONF_DEVICE_TYPE = "device_type"
+
 CODEOWNERS = ["@syssi"]
 DOMAIN = "ks_bms_ble"
 DEPENDENCIES = ["ble_client"]
@@ -10,7 +15,6 @@ AUTO_LOAD = ["binary_sensor", "number", "sensor", "switch", "text_sensor"]
 MULTI_CONF = True
 
 CONF_KS_BMS_BLE_ID = "ks_bms_ble_id"
-CONF_DEVICE_TYPE = "device_type"
 
 ks_bms_ble_ns = cg.esphome_ns.namespace("ks_bms_ble")
 KsBmsBle = ks_bms_ble_ns.class_(
