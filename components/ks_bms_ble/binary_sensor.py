@@ -4,14 +4,13 @@ import esphome.config_validation as cv
 from esphome.const import DEVICE_CLASS_CONNECTIVITY, ENTITY_CATEGORY_DIAGNOSTIC
 
 from . import CONF_KS_BMS_BLE_ID, KS_BMS_BLE_COMPONENT_SCHEMA
-from .const import CONF_DISCHARGING
+from .const import CONF_CHARGING, CONF_DISCHARGING
 
 DEPENDENCIES = ["ks_bms_ble"]
 
 CODEOWNERS = ["@syssi"]
 
 CONF_ONLINE_STATUS = "online_status"
-CONF_CHARGING = "charging"
 CONF_LIMITING_CURRENT = "limiting_current"
 
 # key: binary_sensor_schema kwargs

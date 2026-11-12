@@ -23,7 +23,7 @@ from esphome.const import (
 )
 
 from . import CONF_KS_BMS_BLE_ID, KS_BMS_BLE_COMPONENT_SCHEMA
-from .const import CONF_NOMINAL_CAPACITY
+from .const import CONF_FULL_CHARGE_CAPACITY, CONF_NOMINAL_CAPACITY
 
 DEPENDENCIES = ["ks_bms_ble"]
 
@@ -41,7 +41,6 @@ CONF_CURRENT_PROTECTION_BITMASK = "current_protection_bitmask"
 CONF_TEMPERATURE_PROTECTION_BITMASK = "temperature_protection_bitmask"
 CONF_ERROR_BITMASK = "error_bitmask"
 CONF_STATE_OF_CHARGE = "state_of_charge"
-CONF_FULL_CHARGE_CAPACITY = "full_charge_capacity"
 CONF_CHARGING_CYCLES = "charging_cycles"
 CONF_MIN_CELL_VOLTAGE = "min_cell_voltage"
 CONF_MAX_CELL_VOLTAGE = "max_cell_voltage"

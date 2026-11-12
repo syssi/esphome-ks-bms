@@ -16,7 +16,7 @@ from esphome.const import (
 )
 
 from .. import CONF_KS_BMS_BLE_ID, KS_BMS_BLE_COMPONENT_SCHEMA, ks_bms_ble_ns
-from ..const import CONF_NOMINAL_CAPACITY
+from ..const import CONF_FULL_CHARGE_CAPACITY, CONF_NOMINAL_CAPACITY
 
 DEPENDENCIES = ["ks_bms_ble"]
 CODEOWNERS = ["@syssi"]
@@ -37,7 +37,6 @@ CONF_SOC_60_VOLTAGE = "soc_60_voltage"
 CONF_SOC_40_VOLTAGE = "soc_40_voltage"
 CONF_SOC_20_VOLTAGE = "soc_20_voltage"
 CONF_CYCLE_CAPACITY = "cycle_capacity"
-CONF_FULL_CHARGE_CAPACITY = "full_charge_capacity"
 CONF_CELL_OVERVOLTAGE_PROTECTION = "cell_overvoltage_protection"
 CONF_CELL_OVERVOLTAGE_RECOVERY = "cell_overvoltage_recovery"
 CONF_CELL_OVERVOLTAGE_PROTECTION_DELAY = "cell_overvoltage_protection_delay"
