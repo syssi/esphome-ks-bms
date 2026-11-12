@@ -3,12 +3,12 @@ from esphome.components import switch
 import esphome.config_validation as cv
 
 from .. import CONF_KS_BMS_BLE_ID, KS_BMS_BLE_COMPONENT_SCHEMA, ks_bms_ble_ns
+from ..const import CONF_DISCHARGING
 
 DEPENDENCIES = ["ks_bms_ble"]
 CODEOWNERS = ["@syssi"]
 
 CONF_CHARGING = "charging"
-CONF_DISCHARGING = "discharging"
 
 KsSwitch = ks_bms_ble_ns.class_("KsSwitch", switch.Switch, cg.Component)
 
