@@ -9,7 +9,7 @@ DEPENDENCIES = ["ks_bms_ble"]
 CODEOWNERS = ["@syssi"]
 
 
-KsSwitch = ks_bms_ble_ns.class_("KsSwitch", switch.Switch, cg.Component)
+KsSwitch = ks_bms_ble_ns.class_("KsSwitch", switch.Switch)
 
 SWITCHES = {
     CONF_CHARGING: 0x1D,
@@ -36,7 +36,6 @@ async def to_code(config):
         if key in config:
             conf = config[key]
             var = await switch.new_switch(conf)
-            await cg.register_component(var, conf)
             cg.add(getattr(hub, f"set_{key}_switch")(var))
             cg.add(var.set_parent(hub))
             cg.add(var.set_holding_register(address))
