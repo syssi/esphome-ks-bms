@@ -10,12 +10,16 @@ try:
 except ImportError:  # ESPHome < 2026.11.0
     CONF_SERIAL_NUMBER = "serial_number"
 
+try:
+    from esphome.components.const import CONF_HARDWARE_VERSION
+except ImportError:  # ESPHome < 2026.12.0
+    CONF_HARDWARE_VERSION = "hardware_version"
+
 DEPENDENCIES = ["ks_bms_ble"]
 
 CODEOWNERS = ["@syssi"]
 
 CONF_SOFTWARE_VERSION = "software_version"
-CONF_HARDWARE_VERSION = "hardware_version"
 CONF_BOOTLOADER_VERSION = "bootloader_version"
 CONF_MANUFACTURING_DATE = "manufacturing_date"
 CONF_MODEL_TYPE = "model_type"
